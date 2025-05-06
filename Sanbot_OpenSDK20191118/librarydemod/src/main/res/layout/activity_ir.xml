@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/sanbo_rl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="300px">
+
+        <ImageView
+            android:id="@+id/front_ir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ir_front"
+            android:layout_marginLeft="100px"
+            android:layout_marginStart="100px"/>
+
+        <ImageView
+            android:id="@+id/back_ir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ir_back2"
+            android:layout_toRightOf="@+id/front_ir"
+            android:layout_toEndOf="@+id/front_ir"
+            android:layout_marginStart="100px"
+            android:layout_marginLeft="100px"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/left_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="80dp"
+        android:layout_marginStart="80dp"
+        android:layout_toRightOf="@id/sanbo_rl"
+        android:layout_toEndOf="@id/sanbo_rl"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="1" />
+
+            <TextView
+                android:id="@+id/ir1_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="2" />
+
+            <TextView
+                android:id="@+id/ir2_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="3" />
+
+            <TextView
+                android:id="@+id/ir3_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="4" />
+
+            <TextView
+                android:id="@+id/ir4_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="5" />
+
+            <TextView
+                android:id="@+id/ir5_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="6" />
+
+            <TextView
+                android:id="@+id/ir6_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="7" />
+
+            <TextView
+                android:id="@+id/ir7_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="8" />
+
+            <TextView
+                android:id="@+id/ir8_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/left1_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/left_ll"
+        android:layout_toEndOf="@id/left_ll"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="9" />
+
+            <TextView
+                android:id="@+id/ir9_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="10" />
+
+            <TextView
+                android:id="@+id/ir10_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="11" />
+
+            <TextView
+                android:id="@+id/ir11_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="12" />
+
+            <TextView
+                android:id="@+id/ir12_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="13" />
+
+            <TextView
+                android:id="@+id/ir13_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="14" />
+
+            <TextView
+                android:id="@+id/ir14_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/left2_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/left1_ll"
+        android:layout_toEndOf="@id/left1_ll"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="15" />
+
+            <TextView
+                android:id="@+id/ir15_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="16" />
+
+            <TextView
+                android:id="@+id/ir16_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/left2_ll"
+        android:layout_toEndOf="@id/left2_ll"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="17" />
+
+            <TextView
+                android:id="@+id/ir17_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="18" />
+
+            <TextView
+                android:id="@+id/ir18_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="19" />
+
+            <TextView
+                android:id="@+id/ir19_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="20" />
+
+            <TextView
+                android:id="@+id/ir20_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="21" />
+
+            <TextView
+                android:id="@+id/ir21_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="22" />
+
+            <TextView
+                android:id="@+id/ir22_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="23" />
+
+            <TextView
+                android:id="@+id/ir23_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17px"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/IR_Default_tv_style"
+                android:text="24" />
+
+            <TextView
+                android:id="@+id/ir24_tv"
+                style="@style/IR_tv_style" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>
