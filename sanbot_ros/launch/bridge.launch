@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="sanbot_ros" type="ros_to_mqtt.py" name="ros_to_mqtt" output="screen"/>
+</launch>
