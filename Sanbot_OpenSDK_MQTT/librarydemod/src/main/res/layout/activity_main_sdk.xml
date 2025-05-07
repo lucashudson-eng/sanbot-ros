@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivitySdk">
+
+    <Button
+        android:text="Decodificação por hardware (fluxo principal)"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="mainStreamHard"/>
+
+    <Button
+        android:text="Decodificação por hardware (subfluxo)"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="subStreamHard"/>
+
+    <Button
+        android:text="Decodificação por software NV21 (subfluxo)"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="subStreamNV21"/>
+
+    <Button
+        android:text="Decodificação por software NV21 (fluxo principal)"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="mainStreamNV21"/>
+
+</LinearLayout>
