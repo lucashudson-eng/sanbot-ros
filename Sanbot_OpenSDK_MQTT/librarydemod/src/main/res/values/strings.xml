@@ -418,8 +418,9 @@
 
     <string-array name="topics_array">
         <item>Todos</item>
-        <item>topico/teste1</item>
-        <item>topico/teste2</item>
-        <item>topico/teste3</item>
+        <item>sanbot/ir</item>
+        <item>sanbot/battery</item>
+        <item>ros/light</item>
+        <item>ros/move</item>
     </string-array>
 </resources>

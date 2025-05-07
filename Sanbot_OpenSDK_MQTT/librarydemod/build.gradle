@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.sanbot.librarydemod"
+        applicationId "com.grin.sanbotopensdkmqtt"
         minSdkVersion 14
         targetSdkVersion 27
         versionCode 1

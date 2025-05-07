@@ -26,6 +26,13 @@
         android:layout_marginTop="12dp"
         android:entries="@array/topics_array" />
 
+    <Button
+        android:id="@+id/buttonClear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Limpar Logs"
+        android:layout_marginTop="8dp" />
+
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sanbot.librarydemod">
+    package="com.grin.sanbotopensdkmqtt">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -13,34 +13,20 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.grin.sanbotopensdkmqtt.MainActivity"
             android:exported="true">
+
+            <meta-data
+                android:name="com.sanbot.opensdk.need_apikey"
+                android:value="true" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-<!--        <activity android:name=".MainActivitySdk">-->
-<!--        </activity>-->
-<!--        <activity android:name=".video.MediaControlActivity" />-->
-<!--        <activity android:name=".video.SoftDecodeActivity" />-->
-<!--        <activity android:name=".HomeActivity" >-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
-<!--        <activity android:name=".SystemControlActivity" />-->
-<!--        <activity android:name=".SpeechControlActivity" />-->
-<!--        <activity android:name=".HardwareControlActivity" />-->
-<!--        <activity android:name=".IRSensorActivity" />-->
-<!--        <activity android:name=".UltrasonicActivity" />-->
-<!--        <activity android:name=".HandControlActivity" />-->
-<!--        <activity android:name=".HeadControlActivity" />-->
-<!--        <activity android:name=".WheelControlActivity" />-->
     </application>
 
 </manifest>
