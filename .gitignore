@@ -1,0 +1,114 @@
+# Gradle
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+
+# Logs and temp
+*.log
+*.tmp
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.cache/
+captures/
+.cxx/
+
+# Keystore files
+*.jks
+*.keystore
+
+# NDK
+.externalNativeBuild/
+
+# Kotlin
+*.kotlin_module
+
+# Outputs
+**/libs/*.jar
+**/outputs/**
+
+# IntelliJ
+out/
+
+# Test reports
+**/test-results/
+**/test-output/
+
+# Generated
+**/generated/
+
+# Compose
+**/compose-compiler/**
+
+# Firebase
+google-services.json
+crashlytics-build.properties
+firebase-debug.log
+
+# Fastlane (optional)
+fastlane/report.xml
+fastlane/metadata/android/*/*.txt
+
+# Build scans
+build-scan-data/
+
+# Env files
+.env
+.env.*
+
+
+# Catkin build outputs
+build/
+devel/
+log/
+
+# Catkin tools
+.catkin_tools/
+.catkin_workspace
+CMakeLists.txt.user
+setup.bash
+setup.sh
+setup.zsh
+
+# Generated msgs/srvs/actions
+**/msg_gen/
+**/srv_gen/
+**/action_gen/
+**/cmake/
+
+# ROS temp files
+*.pyc
+*.pyo
+*.swp
+*.bak
+*.launch~
+*.yaml~
+*.cfgc
+*.cfg
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# Editor artifacts
+*~
+*.orig
+*.rej
+
+# Python venvs
+venv/
+env/
+
+# ROS bag files (optional)
+*.bag
+
+# Misc
+*.user
