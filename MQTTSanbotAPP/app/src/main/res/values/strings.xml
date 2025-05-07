@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MQTT Sanbot APP</string>
+    <string-array name="topics_array">
+        <item>Todos</item>
+        <item>topico/teste1</item>
+        <item>topico/teste2</item>
+        <item>topico/teste3</item>
+    </string-array>
+</resources>
