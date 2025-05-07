@@ -4,7 +4,7 @@ import json
 import paho.mqtt.client as mqtt
 from geometry_msgs.msg import Twist
 
-MQTT_BROKER_IP = "192.168.0.50"  # IP do robô com o broker MQTT
+MQTT_BROKER_IP = "localhost"  # IP do robô com o broker MQTT
 MQTT_PORT = 1883
 TOPIC_CMD_VEL = "sanbot/cmd_vel"
 
