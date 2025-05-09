@@ -2,7 +2,7 @@
 
 A ROS driver for interacting with Sanbots's robots.
 
-## APPs
+## :iphone: APPs
 
 To use either of the provided apps, you must have ADB (Android Debug Bridge) installed:
 
@@ -12,9 +12,11 @@ sudo apt install android-tools-adb
 
 APK installation and debugging will be managed through ADB.
 
-There are two ways to connect to the Sanbot: via *USB* or *Wi-Fi*. We recommend using the *Wi-Fi* connection because the USB port is located on the back of the robot’s head—connecting via USB can risk damaging the cable or connector when the head moves.
+There are two ways to connect to the Sanbot: via *USB* or *Wi-Fi*. 
 
-### Connecting via Wi-Fi
+We recommend using the *Wi-Fi* connection because the USB port is located on the back of the robot’s head—connecting via USB can risk damaging the cable or connector when the head moves.
+
+### :electric_plug: Connecting via Wi-Fi
 
 First, make sure the robot is connected to the same Wi-Fi network as your PC.
 Then, you’ll need to *plug in the USB cable temporarily* to open the ADB port. :warning: *Watch out for head movement!*
@@ -32,7 +34,7 @@ Then, connect to the robot using the retrieved IP address:
 adb connect 192.168.xxx.xxx:5555
 ```
 
-### Useful ADB Commands
+### :wrench: Useful ADB Commands
 
 ```
 adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk                          # Install APK
@@ -43,53 +45,56 @@ adb shell am start -n com.grin.sanbotopensdkmqtt/.MainActivity  # Launch MainAct
 
 Installing the app via ADB does not automatically launch it. To run the app, make sure to execute the last ADB command to start it manually.
 
-### Sanbot_OpenSDK20191118
+### :package: Sanbot_OpenSDK20191118
 
-This app is the official example provided by the [Sanbot's Developoer Center](http://blue.sanbotcloud.com:98/dev/docs/robot.html). It demonstrates all of the robot’s available functionalities.
+This is the official example app of using the SDK provided by the [Sanbot's Developoer Center](http://blue.sanbotcloud.com:98/dev/docs/robot.html).
 
-### Sanbot_OpenSDK_MQTT
+It showcases all available functionalities of the robot.
 
-This app is based on the official example provided by Sanbot’s company, but it has been adapted to receive commands via *MQTT*. The only graphical interface available is for configuring and managing the MQTT connection.
+### :package: Sanbot_OpenSDK_MQTT
 
-It can be used independently with any MQTT broker, but it is primarily intended to be used alongside the ROS package included in this repository, which is its main purpose.
+A custom version based on the official app, adapted to receive commands via MQTT.
 
-## ROS Package sanbot_ros
+The graphical interface is limited to MQTT configuration and connection management.
 
-### Available Topics
+It can run independently with any MQTT broker, but it is primarily intended to work with the ROS package included in this repository.
 
-- sanbot/ir
+## :robot: ROS Package sanbot_ros
 
-- sanbot/pir
+### :white_check_mark: Available Topics
 
-- sanbot/touch
+#### Infraed sensors (sanbot/ir)
 
-- sanbot/voice_angle
+#### PIR Presence sensors (sanbot/pir)
 
-- sanbot/battery
+#### Touch sensors (sanbot/touch)
 
-- ros/light
+#### Angle of detected voice (sanbot/voice_angle)
 
-- ros/move
+#### Battery and charging status (sanbot/battery)
 
-- ros/head
+#### Control of forehead white light (ros/light)
 
-- ros/led
+#### Wheel movement control (ros/move)
 
-- ros/mp3
+#### Head movement control (ros/head)
 
-### Curently Not Working
+#### 	Control of head and arm LEDs (ros/led)
 
-- Speach
+### :no_entry_sign: Curently Not Working
 
-- Hand
+#### Speach
 
-- Ultrasonic sensors
+#### Hand movement control
 
-### Additions
+#### Ultrasonic sensors
 
-- MP3
+### :heavy_plus_sign: Additional Features
+
+#### Command to play a fixed mp3 audio (ros/mp3)
 
 Plays a .mp3 file upon receiving any message from the topic ros/mp3.
 
 TODO: Implement functionality to receive text, convert it to speech, and play the generated audio file.
 
+:bulb: Feel free to contribute with bug fixes, improvements, or new features!
