@@ -10,7 +10,7 @@
         android:layout_marginTop="0dp"
         android:hint="Digite o IP do broker"
         android:inputType="textUri"
-        android:text="192.168.0.117" />
+        android:text="192.168.0.108" />
 
     <Button
         android:id="@+id/buttonConnect"

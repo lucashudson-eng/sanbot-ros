@@ -10,6 +10,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
+import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
+import android.media.MediaPlayer;
 
 import com.sanbot.opensdk.base.TopBaseActivity;
 import com.sanbot.opensdk.beans.FuncConstant;
@@ -18,9 +22,14 @@ import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
 import com.sanbot.opensdk.function.unit.HardWareManager;
 import com.sanbot.opensdk.function.unit.SystemManager;
 import com.sanbot.opensdk.function.unit.WheelMotionManager;
-
-import org.json.JSONObject;
 import com.sanbot.opensdk.function.beans.wheelmotion.DistanceWheelMotion;
+import com.sanbot.opensdk.function.unit.HeadMotionManager;
+import com.sanbot.opensdk.function.beans.headmotion.RelativeAngleHeadMotion;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.TouchSensorListener;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.PIRListener;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.InfrareListener;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.VoiceLocateListener;
+import com.sanbot.opensdk.function.beans.LED;
 
 public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener {
 
@@ -41,9 +50,16 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private SystemManager systemManager;
     private HardWareManager hardWareManager;
     private WheelMotionManager wheelMotionManager;
+    private HeadMotionManager headMotionManager;
+
     private Handler publishHandler = new Handler();
 
     private final Handler motionHandler = new Handler(Looper.getMainLooper());
+
+    private final Map<Integer, Long> lastIRUpdate = new HashMap<>();
+    private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
+
+    private MediaPlayer mediaPlayer;
 
 
     @Override
@@ -119,7 +135,94 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         systemManager = (SystemManager) getUnitManager(FuncConstant.SYSTEM_MANAGER);
         hardWareManager = (HardWareManager) getUnitManager(FuncConstant.HARDWARE_MANAGER);
         wheelMotionManager = (WheelMotionManager) getUnitManager(FuncConstant.WHEELMOTION_MANAGER);
+        headMotionManager = (HeadMotionManager) getUnitManager(FuncConstant.HEADMOTION_MANAGER);
         startBatteryPublishingLoop();
+
+        hardWareManager.setOnHareWareListener(
+                new TouchSensorListener() {
+                    @Override
+                    public void onTouch(int part) {
+                        try {
+                            JSONObject touchJson = new JSONObject();
+                            touchJson.put("part", part);
+                            touchJson.put("description", getTouchPartName(part));
+                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(
+                new PIRListener() {
+                    @Override
+                    public void onPIRCheckResult(boolean isChecked, int part) {
+                        try {
+                            JSONObject pirJson = new JSONObject();
+                            pirJson.put("part", part == 1 ? "front" : "back");
+                            pirJson.put("status", isChecked ? 1 : 0);
+                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(
+                new InfrareListener() {
+                    @Override
+                    public void infrareDistance(int part, int distance) {
+                        long now = System.currentTimeMillis();
+                        Long last = lastIRUpdate.get(part); // pode ser null
+
+                        if (last == null || now - last >= IR_UPDATE_INTERVAL_MS) {
+                            lastIRUpdate.put(part, now);
+                            try {
+                                JSONObject irJson = new JSONObject();
+                                irJson.put("sensor", part);
+                                irJson.put("distance_cm", distance);
+                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(new VoiceLocateListener() {
+            @Override
+            public void voiceLocateResult(int angle) {
+                try {
+                    JSONObject voiceJson = new JSONObject();
+                    voiceJson.put("angle", angle);
+                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private String getTouchPartName(int part) {
+        switch (part) {
+            case 1: return "chin_right";
+            case 2: return "chin_left";
+            case 3: return "chest_right";
+            case 4: return "chest_left";
+            case 5: return "backhead_left";
+            case 6: return "backhead_right";
+            case 7: return "back_left";
+            case 8: return "back_right";
+            case 9: return "hand_left";
+            case 10: return "hand_right";
+            case 11: return "head_middle";
+            case 12: return "head_right_front";
+            case 13: return "head_left_front";
+            default: return "unknown";
+        }
     }
 
     @Override
@@ -150,6 +253,12 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             handleLightControl(message);
         } else if ("ros/move".equals(topic)) {
             handleMotionControl(message);
+        } else if ("ros/head".equals(topic)) {
+            handleHeadMotion(message);
+        } else if ("ros/led".equals(topic)) {
+            handleLedControl(message);
+        } else if ("ros/mp3".equals(topic)) {
+            playInternalMp3();
         }
     }
 
@@ -168,14 +277,11 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
             if (level == 0) {
                 hardWareManager.switchWhiteLight(false);
-                appendMessage("Luz desligada");
             } else if (level >= 1 && level <= 3) {
                 hardWareManager.switchWhiteLight(true);
                 hardWareManager.setWhiteLightLevel(level);
-                appendMessage("Luz ligada no nível: " + level);
             }
         } catch (Exception e) {
-            appendMessage("Erro ao processar comando de luz: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -188,6 +294,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             int distance = json.optInt("distance", 0);
             int duration = json.optInt("duration", 0);
 
+            motionHandler.removeCallbacksAndMessages(null);
             if (duration > 0) {
                 byte action = getActionFromDirection(direction);
                 NoAngleWheelMotion motion = new NoAngleWheelMotion(action, speed, 100, 0, NoAngleWheelMotion.STATUS_KEEP);
@@ -215,7 +322,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
 
             if ("stop".equals(direction)) {
-                motionHandler.removeCallbacksAndMessages(null);
                 wheelMotionManager.doNoAngleMotion(new NoAngleWheelMotion(
                         NoAngleWheelMotion.ACTION_STOP, 0, 0, 0, NoAngleWheelMotion.STATUS_KEEP));
                 return;
@@ -280,6 +386,102 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         return "turn_left".equals(direction) || "turn_right".equals(direction);
     }
 
+    private void handleHeadMotion(String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            String direction = json.optString("direction", "stop"); // "up", "down", "left", "right"
+            int angle = json.optInt("angle", 10); // ângulo padrão
+            int motor = json.optInt("motor", 1); // 1: pescoço, 2: vertical, 3: horizontal
+            int speed = json.optInt("speed", 50); // velocidade padrão
+
+            byte action;
+            switch (direction) {
+                case "up":
+                    action = RelativeAngleHeadMotion.ACTION_UP;
+                    break;
+                case "down":
+                    action = RelativeAngleHeadMotion.ACTION_DOWN;
+                    break;
+                case "left":
+                    action = RelativeAngleHeadMotion.ACTION_LEFT;
+                    break;
+                case "right":
+                    action = RelativeAngleHeadMotion.ACTION_RIGHT;
+                    break;
+                default:
+                    action = RelativeAngleHeadMotion.ACTION_STOP;
+            }
+
+            RelativeAngleHeadMotion motion = new RelativeAngleHeadMotion((byte) motor, action, (byte) speed, angle);
+            headMotionManager.doRelativeAngleMotion(motion);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleLedControl(String message) {
+        try {
+            JSONObject obj = new JSONObject(message);
+            String part = obj.optString("part", "all_head");
+            String mode = obj.optString("mode", "blue");
+            byte duration = (byte) obj.optInt("duration", 1);
+            byte random = (byte) obj.optInt("random", 1);
+
+            byte partByte = getLedPart(part);
+            byte modeByte = getLedMode(mode);
+
+            hardWareManager.setLED(new LED(partByte, modeByte, duration, random));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private byte getLedPart(String part) {
+        switch (part.toLowerCase()) {
+            case "all_hand": return LED.PART_ALL_HAND;
+            case "all_head": return LED.PART_ALL_HEAD;
+            case "left_hand": return LED.PART_LEFT_HAND;
+            case "right_hand": return LED.PART_RIGHT_HAND;
+            case "left_head": return LED.PART_LEFT_HEAD;
+            case "right_head": return LED.PART_RIGHT_HEAD;
+            default: return LED.PART_ALL_HEAD;
+        }
+    }
+
+    private byte getLedMode(String mode) {
+        switch (mode.toLowerCase()) {
+            case "white": return LED.MODE_WHITE;
+            case "red": return LED.MODE_RED;
+            case "green": return LED.MODE_GREEN;
+            case "pink": return LED.MODE_PINK;
+            case "purple": return LED.MODE_PURPLE;
+            case "blue": return LED.MODE_BLUE;
+            case "yellow": return LED.MODE_YELLOW;
+            case "flicker_white": return LED.MODE_FLICKER_WHITE;
+            case "flicker_red": return LED.MODE_FLICKER_RED;
+            case "flicker_green": return LED.MODE_FLICKER_GREEN;
+            case "flicker_pink": return LED.MODE_FLICKER_PINK;
+            case "flicker_purple": return LED.MODE_FLICKER_PURPLE;
+            case "flicker_blue": return LED.MODE_FLICKER_BLUE;
+            case "flicker_yellow": return LED.MODE_FLICKER_YELLOW;
+            case "flicker_random": return LED.MODE_FLICKER_RANDOM;
+            default: return LED.MODE_CLOSE;
+        }
+    }
+
+    private void playInternalMp3() {
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+            }
+            mediaPlayer = MediaPlayer.create(this, R.raw.alert);
+            mediaPlayer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onTopicsUpdated(java.util.List<String> topics) {}
 
@@ -327,7 +529,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("battery_status", statusStr);
 
                         mqttHandler.publishMessage("sanbot/battery", json.toString());
-                        appendMessage("Publicado bateria: " + json);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

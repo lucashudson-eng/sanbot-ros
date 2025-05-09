@@ -4,13 +4,13 @@ A ROS driver for interacting with Sanbots's robots.
 
 ## APPs
 
-To run either of the two apps, you must have ADB (Android Debug Bridge) installed:
+To use either of the provided apps, you must have ADB (Android Debug Bridge) installed:
 
 ```
 sudo apt install android-tools-adb
 ```
 
-The APK installation and debugging will be done through ADB.
+APK installation and debugging will be managed through ADB.
 
 There are two ways to connect to the Sanbot: via *USB* or *Wi-Fi*. We recommend using the *Wi-Fi* connection because the USB port is located on the back of the robot’s head—connecting via USB can risk damaging the cable or connector when the head moves.
 
@@ -29,13 +29,13 @@ adb tcpip 5555
 Then, connect to the robot using the retrieved IP address:
 
 ```
-adb connect 192.168.xxx.xxx:555
+adb connect 192.168.xxx.xxx:5555
 ```
 
 ### Useful ADB Commands
 
 ```
-adb install -r -d path/to/your_app.apk                          # Install APK
+adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk                          # Install APK
 adb uninstall com.grin.sanbotopensdkmqtt                        # Uninstall app (required to install a different version)
 adb shell am force-stop com.grin.sanbotopensdkmqtt              # Force close the app
 adb shell am start -n com.grin.sanbotopensdkmqtt/.MainActivity  # Launch MainActivity
@@ -53,5 +53,43 @@ This app is based on the official example provided by Sanbot’s company, but it
 
 It can be used independently with any MQTT broker, but it is primarily intended to be used alongside the ROS package included in this repository, which is its main purpose.
 
-## Package sanbot_ros
+## ROS Package sanbot_ros
+
+### Available Topics
+
+- sanbot/ir
+
+- sanbot/pir
+
+- sanbot/touch
+
+- sanbot/voice_angle
+
+- sanbot/battery
+
+- ros/light
+
+- ros/move
+
+- ros/head
+
+- ros/led
+
+- ros/mp3
+
+### Curently Not Working
+
+- Speach
+
+- Hand
+
+- Ultrasonic sensors
+
+### Additions
+
+- MP3
+
+Plays a .mp3 file upon receiving any message from the topic ros/mp3.
+
+TODO: Implement functionality to receive text, convert it to speech, and play the generated audio file.
 

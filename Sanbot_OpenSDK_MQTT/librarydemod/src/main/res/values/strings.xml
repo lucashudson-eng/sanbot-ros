@@ -420,7 +420,13 @@
         <item>Todos</item>
         <item>sanbot/ir</item>
         <item>sanbot/battery</item>
+        <item>sanbot/touch</item>
+        <item>sanbot/pir</item>
+        <item>sanbot/voice_angle</item>
         <item>ros/light</item>
         <item>ros/move</item>
+        <item>ros/head</item>
+        <item>ros/led</item>
+        <item>ros/mp3</item>
     </string-array>
 </resources>
