@@ -160,7 +160,9 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/ros_to_mqtt.py
+  scripts/ros2mqtt.py
+  scripts/mqtt2ros.py
+  scripts/gamer_teleop.py
   scripts/start_mosquitto.sh
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

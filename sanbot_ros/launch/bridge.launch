@@ -3,5 +3,6 @@
   <node pkg="sanbot_ros" type="start_mosquitto.sh" name="mqtt_broker" output="screen" launch-prefix="bash" />
 
   <!-- Nó Python que conecta ROS ao MQTT -->
-  <node pkg="sanbot_ros" type="ros_to_mqtt.py" name="ros_to_mqtt" output="screen" />
+  <node pkg="sanbot_ros" type="ros2mqtt.py" name="ros2mqtt" output="screen"/>
+  <node pkg="sanbot_ros" type="mqtt2ros.py" name="mqtt2ros" output="screen"/>
 </launch>

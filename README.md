@@ -73,19 +73,25 @@ It can run independently with any MQTT broker, but it is primarily intended to w
 
 #### Battery and charging status (sanbot/battery)
 
+#### System Infos (sanbot/info)
+
+#### Obstacle Sensor (sanbot/obstacle)
+
 #### Control of forehead white light (ros/light)
 
 #### Wheel movement control (ros/move)
 
 #### Head movement control (ros/head)
 
-#### 	Control of head and arm LEDs (ros/led)
+#### Control of head and arm LEDs (ros/led)
+
+### HD Cmaera
 
 ### :no_entry_sign: Curently Not Working
 
-#### Speach
+#### Speach and Speech Regognizer
 
-#### Hand movement control
+#### Arms movement control
 
 #### Ultrasonic sensors
 
