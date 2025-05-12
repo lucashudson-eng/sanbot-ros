@@ -74,6 +74,10 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private HardWareManager hardWareManager;
     private WheelMotionManager wheelMotionManager;
     private HeadMotionManager headMotionManager;
+    private float driftAngle = 0;
+    private float elevationAngle = 0;
+    private float rollAngle = 0;
+
 
     private Handler publishHandler = new Handler();
 
@@ -164,6 +168,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         wheelMotionManager = (WheelMotionManager) getUnitManager(FuncConstant.WHEELMOTION_MANAGER);
         headMotionManager = (HeadMotionManager) getUnitManager(FuncConstant.HEADMOTION_MANAGER);
         startBatteryPublishingLoop();
+        startInfoPublishingLoop();
 
         hardWareManager.setOnHareWareListener(
                 new TouchSensorListener() {
@@ -598,6 +603,18 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (videoHandle != -1) {
+            hdCameraManager.closeStream(videoHandle);
+            videoHandle = -1;
+        }
+        if (mjpegServer != null) {
+            mjpegServer.stop();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         mqttHandler.disconnect();
         publishHandler.removeCallbacksAndMessages(null);
@@ -643,4 +660,29 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         }, 5000);
     }
+
+    private void startInfoPublishingLoop() {
+        publishHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (connected && mqttHandler != null && systemManager != null) {
+                    try {
+                        JSONObject json = new JSONObject();
+                        json.put("robot_id", systemManager.getDeviceId());
+                        json.put("ip", getLocalIpAddress());
+                        json.put("main_service_version", systemManager.getMainServiceVersion());
+                        json.put("android_version", android.os.Build.VERSION.RELEASE);
+                        json.put("device_model", android.os.Build.MODEL);
+
+                        mqttHandler.publishMessage("sanbot/info", json.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                publishHandler.postDelayed(this, 5000); // repete a cada 5 segundos
+            }
+        }, 5000);
+    }
+
 }
