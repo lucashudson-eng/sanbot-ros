@@ -11,6 +11,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
 import org.json.JSONObject;
+
+import java.net.NetworkInterface;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import android.media.MediaPlayer;
@@ -30,6 +34,25 @@ import com.sanbot.opensdk.function.unit.interfaces.hardware.PIRListener;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.InfrareListener;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.VoiceLocateListener;
 import com.sanbot.opensdk.function.beans.LED;
+import com.sanbot.opensdk.function.unit.HDCameraManager;
+import com.sanbot.opensdk.beans.OperationResult;
+import com.sanbot.opensdk.function.beans.StreamOption;
+import com.grin.sanbotopensdkmqtt.MjpegServer;
+
+import fi.iki.elonen.NanoHTTPD;
+
+import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
+import android.graphics.YuvImage;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicReference;
+import java.net.InetAddress;
+
 
 public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener {
 
@@ -60,6 +83,10 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
 
     private MediaPlayer mediaPlayer;
+
+    private HDCameraManager hdCameraManager;
+    private MjpegServer mjpegServer;
+    private int videoHandle = -1;
 
 
     @Override
@@ -204,6 +231,79 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 }
             }
         });
+
+        // Inicializa o MJPEG Server
+        mjpegServer = new MjpegServer(8080);
+        try {
+            mjpegServer.start();
+            appendMessage("🌐 MJPEG disponível em: http://" + getLocalIpAddress() + ":8080");
+        } catch (IOException e) {
+            e.printStackTrace();
+            appendMessage("❌ Erro ao iniciar o MJPEG server.");
+        }
+
+        // Inicia o stream de vídeo
+        hdCameraManager = (HDCameraManager) getUnitManager(FuncConstant.HDCAMERA_MANAGER);
+
+        StreamOption streamOption = new StreamOption();
+        streamOption.setChannel(StreamOption.SUB_STREAM);
+        streamOption.setDecodType(StreamOption.SOFTWARE_DECODE_NV21);  // Use NV21 para gerar JPEG
+        streamOption.setJustIframe(false);
+
+        hdCameraManager.setMediaListener(new com.sanbot.opensdk.function.unit.interfaces.media.MediaStreamListener() {
+            private long lastFrameTime = 0;
+
+            @Override
+            public void getVideoStream(int handle, byte[] bytes, int width, int height) {
+                long now = System.currentTimeMillis();
+                if (now - lastFrameTime < 100) return; // Máximo de 20 fps
+                lastFrameTime = now;
+
+                Bitmap bitmap = nv21ToBitmap(bytes, width, height);
+                if (bitmap != null && mjpegServer != null) {
+                    mjpegServer.updateFrame(bitmap);
+                }
+            }
+            @Override
+            public void getAudioStream(int i, byte[] bytes) {
+                // Ignorado
+            }
+        });
+
+        OperationResult result = hdCameraManager.openStream(streamOption);
+        if (result != null && !"-1".equals(result.getResult())) {
+            videoHandle = Integer.parseInt(result.getResult());
+            appendMessage("🎥 Stream de vídeo iniciado.");
+        } else {
+            appendMessage("❌ Falha ao iniciar stream de vídeo.");
+        }
+    }
+
+    private Bitmap nv21ToBitmap(byte[] data, int width, int height) {
+        try {
+            YuvImage image = new YuvImage(data, ImageFormat.NV21, width, height, null);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compressToJpeg(new Rect(0, 0, width, height), 80, baos);
+            byte[] jpegData = baos.toByteArray();
+            return BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String getLocalIpAddress() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            for (NetworkInterface ni : Collections.list(interfaces)) {
+                for (InetAddress address : Collections.list(ni.getInetAddresses())) {
+                    if (!address.isLoopbackAddress() && address instanceof java.net.Inet4Address) {
+                        return address.getHostAddress();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return "localhost";
     }
 
     private String getTouchPartName(int part) {
@@ -501,6 +601,12 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     protected void onDestroy() {
         mqttHandler.disconnect();
         publishHandler.removeCallbacksAndMessages(null);
+        if (videoHandle != -1) {
+            hdCameraManager.closeStream(videoHandle);
+        }
+        if (mjpegServer != null) {
+            mjpegServer.stop();
+        }
         super.onDestroy();
     }
 
