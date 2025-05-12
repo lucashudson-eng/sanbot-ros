@@ -40,7 +40,7 @@ min_speed = 0.05
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
     rospy.init_node('gamer_teleop')
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    pub = rospy.Publisher('/ros/cmd_vel', Twist, queue_size=10)
 
     print(msg)
     last_key = ''

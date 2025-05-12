@@ -101,12 +101,12 @@ if __name__ == "__main__":
     mqtt_client.loop_start()
 
     # Assinaturas ROS
-    rospy.Subscriber("/cmd_vel", Twist, callback_cmd_vel)
-    rospy.Subscriber("/move", String, callback_move)
-    rospy.Subscriber("/head", String, callback_head)
-    rospy.Subscriber("/light", String, callback_light)
-    rospy.Subscriber("/led", String, callback_led)
-    rospy.Subscriber("/mp3", String, callback_mp3)
+    rospy.Subscriber("/ros/cmd_vel", Twist, callback_cmd_vel)
+    rospy.Subscriber("/ros/move", String, callback_move)
+    rospy.Subscriber("/ros/head", String, callback_head)
+    rospy.Subscriber("/ros/light", String, callback_light)
+    rospy.Subscriber("/ros/led", String, callback_led)
+    rospy.Subscriber("/ros/mp3", String, callback_mp3)
 
     rospy.loginfo("🔁 Enviando comandos do ROS para o app Android via MQTT...")
     rospy.spin()

@@ -53,7 +53,7 @@ It showcases all available functionalities of the robot.
 
 ### :package: Sanbot_OpenSDK_MQTT
 
-A custom version based on the official app, adapted to receive commands via MQTT.
+A custom version based on the official app, adapted to receive commands and senf informations via MQTT.
 
 The graphical interface is limited to MQTT configuration and connection management.
 
@@ -61,46 +61,35 @@ It can run independently with any MQTT broker, but it is primarily intended to w
 
 ## :robot: ROS Package sanbot_ros
 
+### Instalation
+
+### Running
+
 ### :white_check_mark: Available Topics
 
-#### Infraed sensors (sanbot/ir)
-
-#### PIR Presence sensors (sanbot/pir)
-
-#### Touch sensors (sanbot/touch)
-
-#### Angle of detected voice (sanbot/voice_angle)
-
-#### Battery and charging status (sanbot/battery)
-
-#### System Infos (sanbot/info)
-
-#### Obstacle Sensor (sanbot/obstacle)
-
-#### Control of forehead white light (ros/light)
-
-#### Wheel movement control (ros/move)
-
-#### Head movement control (ros/head)
-
-#### Control of head and arm LEDs (ros/led)
-
-### HD Cmaera
+| **Topic**                          | **Direction** | **Description**                                              | **Message Format Example** |
+|-----------------------------------|---------------|--------------------------------------------------------------|-----------------------------|
+| `sanbot/touch`                   | subscribe       | Touch sensor                                                | `{"part": 3, "description": "chest_right"}` |
+| `sanbot/pir`                     | subscribe       | PIR presence sensor (front or back)                         | `{"part": "front", "status": 1}` |
+| `sanbot/ir`                      | subscribe       | Infrared sensor (distance in cm)                            | `{"sensor": 1, "distance_cm": 45}` |
+| `sanbot/voice_angle`             | subscribe       | Angle of detected voice                                     | `{"angle": 123}` |
+| `sanbot/obstacle`                | subscribe       | Obstacle detection sensor (only 1 if obstacle)                                  | `{"status": 1}` |
+| `sanbot/battery`                 | subscribe       | Battery level and charging status                           | `{"battery_level": 82, "battery_status": "charging_by_wire"}` |
+| `sanbot/info`                    | subscribe       | System information                                          | `{"robot_id": "...", "ip": "...", "main_service_version": "...", "android_version": "...", "device_model": "..."}` |
+| `sanbot/camera`                  | subscribe       | Real-time image stream from robot's HD camera (ROS or Mjpeg via through IP:8080) | - |
+| `ros/light`                      | publish         | Control the white forehead LED                              | `{"white": 2}` |
+| `ros/move`                       | publish         | Move the robot                                              | `{"direction": "forward", "speed": 6, "distance": 30, "duration": 3}` |
+| `ros/head`                       | publish         | Head movement (direction, angle, motor, speed)              | `{"direction": "up", "angle": 10, "motor": 1, "speed": 50}` |
+| `ros/led`                        | publish         | Color LED control                                           | `{"part": "all_head", "mode": "blue", "duration": 2, "random": 1}` |
 
 ### :no_entry_sign: Curently Not Working
 
-#### Speach and Speech Regognizer
+I'm not sure whether the issue is due to the only robot I have for testing being partially non-functional from not having been unused for too long, or if the SDK version simply isn't fully compatible with this particular robot model/version. Either way, some features just didn't work — not even with the official example app provided by Sanbot's company. Since I wasn't able to test them properly, I chose not to implement those features.
 
-#### Arms movement control
+- Speach and Speech Regognizer
 
-#### Ultrasonic sensors
+- Arms movement control
 
-### :heavy_plus_sign: Additional Features
-
-#### Command to play a fixed mp3 audio (ros/mp3)
-
-Plays a .mp3 file upon receiving any message from the topic ros/mp3.
-
-TODO: Implement functionality to receive text, convert it to speech, and play the generated audio file.
+- Ultrasonic sensors
 
 :bulb: Feel free to contribute with bug fixes, improvements, or new features!
