@@ -38,6 +38,7 @@ import com.sanbot.opensdk.function.unit.HDCameraManager;
 import com.sanbot.opensdk.beans.OperationResult;
 import com.sanbot.opensdk.function.beans.StreamOption;
 import com.grin.sanbotopensdkmqtt.MjpegServer;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.ObstacleListener;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -231,6 +232,19 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                     JSONObject voiceJson = new JSONObject();
                     voiceJson.put("angle", angle);
                     mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        hardWareManager.setOnHareWareListener(new ObstacleListener() {
+            @Override
+            public void onObstacleStatus(boolean status) {
+                try{
+                    JSONObject json = new JSONObject();
+                    json.put("status", 1);
+                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

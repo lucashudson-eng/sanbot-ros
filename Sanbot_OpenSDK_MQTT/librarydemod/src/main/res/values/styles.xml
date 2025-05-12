@@ -8,35 +8,4 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="IR_tv_style">
-        <item name="android:layout_width">40dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@drawable/shape_box_red_with_bound</item>
-        <item name="android:gravity">center_horizontal</item>
-        <item name="android:padding">5dp</item>
-        <item name="android:textColor">#b5260e</item>
-        <item name="android:text">0</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:layout_marginLeft">10dp</item>
-    </style>
-
-    <style name="IR_Default_tv_style">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:gravity">center</item>
-        <item name="android:background">@mipmap/ir_bg</item>
-        <item name="android:textColor">#ffffff</item>
-        <item name="android:textSize">18sp</item>
-    </style>
-
-    <style name="btnStyle">
-        <item name="android:layout_width">320px</item>
-        <item name="android:layout_height">90px</item>
-        <item name="android:background">@drawable/btn_select</item>
-        <item name="android:textColor">@color/text_white</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:layout_margin">3dp</item>
-        <item name="android:padding">5dp</item>
-        <item name="android:textAllCaps">false</item>
-    </style>
 </resources>
