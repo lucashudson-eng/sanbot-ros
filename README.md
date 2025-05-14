@@ -1,10 +1,10 @@
 # sanbot-ros
 
-A ROS driver for interacting with Sanbots's robots.
+A ROS driver for interacting with Sanbot robots via MQTT and ROS topics.
 
-## :iphone: APPs
+## :iphone: Android APPs
 
-To use either of the provided apps, you must have ADB (Android Debug Bridge) installed:
+To use either of the provided apps, make sure ADB (Android Debug Bridge) is installed:
 
 ```
 sudo apt install android-tools-adb
@@ -18,8 +18,8 @@ We recommend using the *Wi-Fi* connection because the USB port is located on the
 
 ### :electric_plug: Connecting via Wi-Fi
 
-First, make sure the robot is connected to the same Wi-Fi network as your PC.
-Then, you’ll need to *plug in the USB cable temporarily* to open the ADB port. :warning: *Watch out for head movement!*
+First, ensure the robot is connected to the same Wi-Fi network as your PC.  
+Then, temporarily connect a USB cable to open the ADB port. :warning: *Be careful — the head might move!*
 
 Once the USB is connected, run the following commands to retrieve the robot's IP and enable ADB over Wi-Fi:
 
@@ -31,16 +31,16 @@ adb tcpip 5555
 Then, connect to the robot using the retrieved IP address:
 
 ```
-adb connect 192.168.xxx.xxx:5555
+adb connect <ROBOT_IP>:5555
 ```
 
 ### :wrench: Useful ADB Commands
 
 ```
-adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk                          # Install APK
-adb uninstall com.grin.sanbotopensdkmqtt                        # Uninstall app (required to install a different version)
-adb shell am force-stop com.grin.sanbotopensdkmqtt              # Force close the app
-adb shell am start -n com.grin.sanbotopensdkmqtt/.MainActivity  # Launch MainActivity
+adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk # Install APK
+adb uninstall com.grin.sanbotmqtt                        # Uninstall app (required to install a different version)
+adb shell am force-stop com.grin.sanbotmqtt              # Force close the app
+adb shell am start -n com.grin.sanbotmqtt/.MainActivity  # Launch MainActivity
 ```
 
 Installing the app via ADB does not automatically launch it. To run the app, make sure to execute the last ADB command to start it manually.
@@ -53,7 +53,7 @@ It showcases all available functionalities of the robot.
 
 ### :package: Sanbot_OpenSDK_MQTT
 
-A custom version based on the official app, adapted to receive commands and senf informations via MQTT.
+A custom version based on the official app, adapted to receive commands and send information via MQTT.
 
 The graphical interface is limited to MQTT configuration and connection management.
 
@@ -63,7 +63,66 @@ It can run independently with any MQTT broker, but it is primarily intended to w
 
 ### Instalation
 
+Clone the repository:
+
+```
+cd ~/catkin_ws/src/
+
+git clone https://github.com/lucashudson-eng/sanbot-ros.git
+```
+
+Install Python dependencies:
+
+```
+pip install -r ~/catkin_ws/src/sanbot-ros/sanbot_ros/requirements.txt
+```
+
+Build the workspace and source it:
+
+```
+cd ~/catkin_ws/
+
+catking build
+
+source ~/catkin_ws/devel/setup.bash
+```
+
 ### Running
+
+Start an MQTT broker (Mosquitto):
+
+```
+mosquitto -p 1883 -d
+```
+
+Connect the robot to the same network as your computer.
+
+Get your computer's IP with:
+
+```
+ifconfig
+```
+
+Set that IP in the app's IP field on the robot.
+
+Launch the bridge between ROS and MQTT:
+
+```
+roslaunch sanbot_ros bridge.launch
+```
+
+Optionally, control the robot using:
+
+```
+rosrun sanbot_ros gamer_teleop.py
+```
+
+Or use the official ROS package:
+
+```
+sudo apt install ros-noetic-teleop-twist-keyboard
+rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+```
 
 ### :white_check_mark: Available Topics
 
@@ -76,18 +135,21 @@ It can run independently with any MQTT broker, but it is primarily intended to w
 | `sanbot/obstacle`                | subscribe       | Obstacle detection sensor (only 1 if obstacle)                                  | `{"status": 1}` |
 | `sanbot/battery`                 | subscribe       | Battery level and charging status                           | `{"battery_level": 82, "battery_status": "charging_by_wire"}` |
 | `sanbot/info`                    | subscribe       | System information                                          | `{"robot_id": "...", "ip": "...", "main_service_version": "...", "android_version": "...", "device_model": "..."}` |
-| `sanbot/camera`                  | subscribe       | Real-time image stream from robot's HD camera (ROS or Mjpeg via through IP:8080) | - |
+| `sanbot/camera`                  | subscribe       | Real-time image stream from robot's HD camera (ROS or Mjpeg via through IP:8080) | `sensor_msgs/Image` |
 | `ros/light`                      | publish         | Control the white forehead LED                              | `{"white": 2}` |
 | `ros/move`                       | publish         | Move the robot                                              | `{"direction": "forward", "speed": 6, "distance": 30, "duration": 3}` |
+| `ros/cmd_vel`                    | publish         | Standard ROS velocity control topic (only ROS)              | `geometry_msgs/Twist` |
 | `ros/head`                       | publish         | Head movement (direction, angle, motor, speed)              | `{"direction": "up", "angle": 10, "motor": 1, "speed": 50}` |
 | `ros/led`                        | publish         | Color LED control                                           | `{"part": "all_head", "mode": "blue", "duration": 2, "random": 1}` |
-| `ros/speak`                      | publish         | Speak a custom message                                         | `{"msg": "Hello World"}` |
+| `ros/speak`                      | publish         | Speak a custom message                                      | `{"msg": "Hello World"}` |
 
-### :no_entry_sign: Curently Not Working
+### :no_entry_sign: Currently Not Working
 
-I'm not sure whether the issue is due to the only robot I have for testing being partially non-functional from not having been unused for too long, or if the SDK version simply isn't fully compatible with this particular robot model/version. Either way, some features just didn't work — not even with the official example app provided by Sanbot's company. Since I wasn't able to test them properly, I chose not to implement those features.
+I'm not sure whether the issue stems from the fact that the only robot I have for testing has become partially non-functional due to extended inactivity, or if the SDK version is simply not fully compatible with this specific robot model — or perhaps even with this outdated software version. 
 
-- Speech Regognizer
+In any case, certain features did not work as expected — not even when using the official example app provided by Sanbot’s company. Because I wasn’t able to properly test these features, I decided not to implement them for now.
+
+- Speech recognizer
 
 - Arms movement control
 

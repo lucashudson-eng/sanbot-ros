@@ -14,7 +14,7 @@ TOPIC_MOVE = "ros/move"
 TOPIC_HEAD = "ros/head"
 TOPIC_LIGHT = "ros/light"
 TOPIC_LED = "ros/led"
-TOPIC_MP3 = "ros/mp3"
+TOPIC_SPEAK = "ros/speak"
 
 def callback_cmd_vel(msg):
     x = msg.linear.x
@@ -84,9 +84,13 @@ def callback_led(msg):
     except Exception as e:
         rospy.logwarn(f"Erro no JSON de ros/led: {e}")
 
-def callback_mp3(msg):
-    mqtt_client.publish(TOPIC_MP3, "")
-    rospy.loginfo("[MQTT] ros/mp3: Trigger")
+def callback_speak(msg):
+    try:
+        data = json.loads(msg.data)
+        mqtt_client.publish(TOPIC_SPEAK, json.dumps(data))
+        rospy.loginfo(f"[MQTT] ros/speak: {data}")
+    except Exception as e:
+        rospy.logwarn(f"Erro no JSON de ros/speak: {e}")
 
 def on_connect(client, userdata, flags, rc):
     rospy.loginfo(f"Conectado ao broker MQTT (rc={rc})")
@@ -106,7 +110,7 @@ if __name__ == "__main__":
     rospy.Subscriber("/ros/head", String, callback_head)
     rospy.Subscriber("/ros/light", String, callback_light)
     rospy.Subscriber("/ros/led", String, callback_led)
-    rospy.Subscriber("/ros/mp3", String, callback_mp3)
+    rospy.Subscriber("/ros/speak", String, callback_speak)
 
     rospy.loginfo("🔁 Enviando comandos do ROS para o app Android via MQTT...")
     rospy.spin()

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <resources>
-    <string name="app_name">QihanOpenSDK Demo</string>
+    <string name="app_name">Sanbot MQTT</string>
 
     <string-array name="topics_array">
         <item>Todos</item>
