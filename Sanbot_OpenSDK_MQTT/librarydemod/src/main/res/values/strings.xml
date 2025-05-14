@@ -15,6 +15,6 @@
         <item>ros/move</item>
         <item>ros/head</item>
         <item>ros/led</item>
-        <item>ros/mp3</item>
+        <item>ros/speak</item>
     </string-array>
 </resources>

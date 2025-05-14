@@ -81,15 +81,18 @@ It can run independently with any MQTT broker, but it is primarily intended to w
 | `ros/move`                       | publish         | Move the robot                                              | `{"direction": "forward", "speed": 6, "distance": 30, "duration": 3}` |
 | `ros/head`                       | publish         | Head movement (direction, angle, motor, speed)              | `{"direction": "up", "angle": 10, "motor": 1, "speed": 50}` |
 | `ros/led`                        | publish         | Color LED control                                           | `{"part": "all_head", "mode": "blue", "duration": 2, "random": 1}` |
+| `ros/speak`                      | publish         | Speak a custom message                                         | `{"msg": "Hello World"}` |
 
 ### :no_entry_sign: Curently Not Working
 
 I'm not sure whether the issue is due to the only robot I have for testing being partially non-functional from not having been unused for too long, or if the SDK version simply isn't fully compatible with this particular robot model/version. Either way, some features just didn't work — not even with the official example app provided by Sanbot's company. Since I wasn't able to test them properly, I chose not to implement those features.
 
-- Speach and Speech Regognizer
+- Speech Regognizer
 
 - Arms movement control
 
 - Ultrasonic sensors
+
+- Gyroscope
 
 :bulb: Feel free to contribute with bug fixes, improvements, or new features!

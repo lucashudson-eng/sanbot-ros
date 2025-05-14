@@ -53,9 +53,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.net.InetAddress;
+import android.speech.tts.TextToSpeech;
+import java.util.Locale;
 
-
-public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener {
+public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener {
 
     private EditText editTextIp;
     private Button buttonConnect;
@@ -93,6 +94,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private MjpegServer mjpegServer;
     private int videoHandle = -1;
 
+    private TextToSpeech tts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +162,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         });
 
         buttonClear.setOnClickListener(v -> textViewMessages.setText(""));
+
+        tts = new TextToSpeech(this, this);
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts.setLanguage(new Locale("pt", "BR"));
+        } else {
+            Log.e("TTS", "Falha ao inicializar TTS");
+        }
     }
 
     @Override
@@ -376,8 +389,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             handleHeadMotion(message);
         } else if ("ros/led".equals(topic)) {
             handleLedControl(message);
-        } else if ("ros/mp3".equals(topic)) {
-            playInternalMp3();
+        } else if ("ros/speak".equals(topic)) {
+            handleSpeak(message);
         }
     }
 
@@ -588,16 +601,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
     }
 
-    private void playInternalMp3() {
-        try {
-            if (mediaPlayer != null) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
+    private void handleSpeak(String message) {
+        if (tts != null) {
+            try {
+                JSONObject json = new JSONObject(message);
+                String texto = json.optString("msg", "");
+                if (!texto.isEmpty()) {
+                    tts.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "mqtt_speak");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            mediaPlayer = MediaPlayer.create(this, R.raw.alert);
-            mediaPlayer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -637,6 +651,10 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
         if (mjpegServer != null) {
             mjpegServer.stop();
+        }
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
         }
         super.onDestroy();
     }
