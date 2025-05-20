@@ -41,6 +41,7 @@ adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/ou
 adb uninstall com.grin.sanbotmqtt                        # Uninstall app (required to install a different version)
 adb shell am force-stop com.grin.sanbotmqtt              # Force close the app
 adb shell am start -n com.grin.sanbotmqtt/.MainActivity  # Launch MainActivity
+adb logcat                                               # Debug APP
 ```
 
 Installing the app via ADB does not automatically launch it. To run the app, make sure to execute the last ADB command to start it manually.

@@ -1,5 +1,6 @@
 package com.grin.sanbotmqtt;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -21,9 +22,12 @@ import android.media.MediaPlayer;
 
 import com.sanbot.opensdk.base.TopBaseActivity;
 import com.sanbot.opensdk.beans.FuncConstant;
+import com.sanbot.opensdk.function.beans.SpeakOption;
 import com.sanbot.opensdk.function.beans.wheelmotion.NoAngleWheelMotion;
 import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
+import com.sanbot.opensdk.function.unit.BaseManager;
 import com.sanbot.opensdk.function.unit.HardWareManager;
+import com.sanbot.opensdk.function.unit.SpeechManager;
 import com.sanbot.opensdk.function.unit.SystemManager;
 import com.sanbot.opensdk.function.unit.WheelMotionManager;
 import com.sanbot.opensdk.function.beans.wheelmotion.DistanceWheelMotion;
@@ -38,6 +42,7 @@ import com.sanbot.opensdk.function.unit.HDCameraManager;
 import com.sanbot.opensdk.beans.OperationResult;
 import com.sanbot.opensdk.function.beans.StreamOption;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.ObstacleListener;
+import com.sanbot.opensdk.function.unit.interfaces.hardware.GyroscopeListener;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -50,6 +55,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import android.speech.tts.TextToSpeech;
 import java.util.Locale;
+import com.sanbot.opensdk.function.beans.speech.Grammar;
+import com.sanbot.opensdk.function.beans.speech.RecognizeTextBean;
+import com.sanbot.opensdk.function.unit.interfaces.speech.RecognizeListener;
+import android.support.annotation.NonNull;
+
 
 public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener {
 
@@ -71,9 +81,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private HardWareManager hardWareManager;
     private WheelMotionManager wheelMotionManager;
     private HeadMotionManager headMotionManager;
-    private float driftAngle = 0;
-    private float elevationAngle = 0;
-    private float rollAngle = 0;
+    private SpeechManager speechManager;
 
 
     private Handler publishHandler = new Handler();
@@ -83,8 +91,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private final Map<Integer, Long> lastIRUpdate = new HashMap<>();
     private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
 
-    private MediaPlayer mediaPlayer;
-
     private HDCameraManager hdCameraManager;
     private MjpegServer mjpegServer;
     private int videoHandle = -1;
@@ -93,6 +99,13 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+//        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+//            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//            startActivity(intent);
+//            Runtime.getRuntime().exit(0);  // Fecha de forma limpa
+//        });
+
         register(MainActivity.class);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onCreate(savedInstanceState);
@@ -116,8 +129,15 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         if (lastIp != null) {
             editTextIp.setText(lastIp);
         }
+        lastIp = editTextIp.getText().toString().trim();
 
         mqttHandler = new MqttHandler(this, this);
+
+        mqttHandler.setBrokerIp(lastIp);
+
+        mqttHandler.connect();
+        buttonConnect.setEnabled(false);
+        buttonConnect.setText("Conectando...");
 
         spinnerTopics.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -164,7 +184,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            tts.setLanguage(new Locale("pt", "BR"));
+            tts.setLanguage(new Locale("en", "US"));
         } else {
             Log.e("TTS", "Falha ao inicializar TTS");
         }
@@ -173,91 +193,108 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     @Override
     protected void onMainServiceConnected() {
         systemManager = (SystemManager) getUnitManager(FuncConstant.SYSTEM_MANAGER);
-        hardWareManager = (HardWareManager) getUnitManager(FuncConstant.HARDWARE_MANAGER);
         wheelMotionManager = (WheelMotionManager) getUnitManager(FuncConstant.WHEELMOTION_MANAGER);
         headMotionManager = (HeadMotionManager) getUnitManager(FuncConstant.HEADMOTION_MANAGER);
+        speechManager = (SpeechManager) getUnitManager(FuncConstant.SPEECH_MANAGER);
         startBatteryPublishingLoop();
         startInfoPublishingLoop();
 
-        hardWareManager.setOnHareWareListener(
-                new TouchSensorListener() {
-                    @Override
-                    public void onTouch(int part) {
-                        try {
-                            JSONObject touchJson = new JSONObject();
-                            touchJson.put("part", part);
-                            touchJson.put("description", getTouchPartName(part));
-                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-        );
+        hardWareManager = (HardWareManager) getUnitManager(FuncConstant.HARDWARE_MANAGER);
 
-        hardWareManager.setOnHareWareListener(
-                new PIRListener() {
-                    @Override
-                    public void onPIRCheckResult(boolean isChecked, int part) {
-                        try {
-                            JSONObject pirJson = new JSONObject();
-                            pirJson.put("part", part == 1 ? "front" : "back");
-                            pirJson.put("status", isChecked ? 1 : 0);
-                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-        );
-
-        hardWareManager.setOnHareWareListener(
-                new InfrareListener() {
-                    @Override
-                    public void infrareDistance(int part, int distance) {
-                        long now = System.currentTimeMillis();
-                        Long last = lastIRUpdate.get(part); // pode ser null
-
-                        if (last == null || now - last >= IR_UPDATE_INTERVAL_MS) {
-                            lastIRUpdate.put(part, now);
-                            try {
-                                JSONObject irJson = new JSONObject();
-                                irJson.put("sensor", part);
-                                irJson.put("distance_cm", distance);
-                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-        );
-
-        hardWareManager.setOnHareWareListener(new VoiceLocateListener() {
-            @Override
-            public void voiceLocateResult(int angle) {
-                try {
-                    JSONObject voiceJson = new JSONObject();
-                    voiceJson.put("angle", angle);
-                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        hardWareManager.setOnHareWareListener(new ObstacleListener() {
-            @Override
-            public void onObstacleStatus(boolean status) {
-                try{
-                    JSONObject json = new JSONObject();
-                    json.put("status", 1);
-                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        hardWareManager.setOnHareWareListener(
+//                new TouchSensorListener() {
+//                    @Override
+//                    public void onTouch(int part) {
+//                        try {
+//                            JSONObject touchJson = new JSONObject();
+//                            touchJson.put("part", part);
+//                            touchJson.put("description", getTouchPartName(part));
+//                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//        );
+//
+//        hardWareManager.setOnHareWareListener(
+//                new PIRListener() {
+//                    @Override
+//                    public void onPIRCheckResult(boolean isChecked, int part) {
+//                        try {
+//                            JSONObject pirJson = new JSONObject();
+//                            pirJson.put("part", part == 1 ? "front" : "back");
+//                            pirJson.put("status", isChecked ? 1 : 0);
+//                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//        );
+//
+//        hardWareManager.setOnHareWareListener(
+//                new InfrareListener() {
+//                    @Override
+//                    public void infrareDistance(int part, int distance) {
+//                        long now = System.currentTimeMillis();
+//                        Long last = lastIRUpdate.get(part); // pode ser null
+//
+//                        if (last == null || now - last >= IR_UPDATE_INTERVAL_MS) {
+//                            lastIRUpdate.put(part, now);
+//                            try {
+//                                JSONObject irJson = new JSONObject();
+//                                irJson.put("sensor", part);
+//                                irJson.put("distance_cm", distance);
+//                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//                }
+//        );
+//
+//        hardWareManager.setOnHareWareListener(new VoiceLocateListener() {
+//            @Override
+//            public void voiceLocateResult(int angle) {
+//                try {
+//                    JSONObject voiceJson = new JSONObject();
+//                    voiceJson.put("angle", angle);
+//                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//
+//        hardWareManager.setOnHareWareListener(new ObstacleListener() {
+//            @Override
+//            public void onObstacleStatus(boolean status) {
+//                try{
+//                    JSONObject json = new JSONObject();
+//                    json.put("status", 1);
+//                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//
+//        hardWareManager.setOnHareWareListener(new GyroscopeListener() {
+//            @Override
+//            public void gyroscopeData(float x, float y, float z) {
+//                try {
+//                    JSONObject gyroJson = new JSONObject();
+//                    gyroJson.put("x", x);
+//                    gyroJson.put("y", y);
+//                    gyroJson.put("z", z);
+//                    mqttHandler.publishMessage("sanbot/gyro", gyroJson.toString());
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
         // Inicializa o MJPEG Server
         mjpegServer = new MjpegServer(8080);
@@ -298,12 +335,58 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         });
 
         OperationResult result = hdCameraManager.openStream(streamOption);
-        if (result != null && !"-1".equals(result.getResult())) {
-            videoHandle = Integer.parseInt(result.getResult());
-            appendMessage("🎥 Stream de vídeo iniciado.");
+        if (result != null) {
+            String rawResult = result.getResult();
+            try {
+                int handle = Integer.parseInt(rawResult);
+                if (handle != -1) {
+                    videoHandle = handle;
+                    appendMessage("🎥 Stream de vídeo iniciado.");
+                } else {
+                    appendMessage("❌ Falha ao iniciar stream de vídeo (handle -1).");
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                appendMessage("❌ Falha ao iniciar stream: retorno inválido: " + rawResult);
+            }
         } else {
-            appendMessage("❌ Falha ao iniciar stream de vídeo.");
+            appendMessage("❌ Falha ao iniciar stream: OperationResult é nulo.");
         }
+
+        speechManager.setOnSpeechListener(new RecognizeListener() {
+            @Override
+            public boolean onRecognizeResult(@NonNull Grammar grammar) {
+                String texto = grammar.getText();
+                publishSpeechToMqtt(texto);
+                return false; // não intercepta o reconhecimento
+            }
+
+            @Override
+            public void onRecognizeText(@NonNull RecognizeTextBean recognizeTextBean) {
+                String texto = recognizeTextBean.getText();
+                publishSpeechToMqtt(texto);
+            }
+
+            @Override
+            public void onRecognizeVolume(int volume) {
+                // opcional: mostrar o volume de entrada
+            }
+
+            @Override
+            public void onStartRecognize() {
+                Log.d("TTS", "Reconhecimento iniciado");
+            }
+
+            @Override
+            public void onStopRecognize() {
+                Log.d("TTS", "Reconhecimento parado");
+            }
+
+            @Override
+            public void onError(int i, int i1) {
+                Log.e("TTS", "Erro no reconhecimento: " + i + ", " + i1);
+            }
+        });
     }
 
     private Bitmap nv21ToBitmap(byte[] data, int width, int height) {
@@ -385,32 +468,33 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         } else if ("ros/led".equals(topic)) {
             handleLedControl(message);
         } else if ("ros/speak".equals(topic)) {
-            handleSpeak(message);
+//            handleSpeakAndroid(message);
+            handleSpeakSDK(message);
         }
     }
 
     private void handleLightControl(String message) {
-        try {
-            int level = -1;
-            message = message.trim();
-            if (message.startsWith("{")) {
-                JSONObject obj = new JSONObject(message);
-                if (obj.has("white")) {
-                    level = obj.getInt("white");
-                }
-            } else {
-                level = Integer.parseInt(message);
-            }
-
-            if (level == 0) {
-                hardWareManager.switchWhiteLight(false);
-            } else if (level >= 1 && level <= 3) {
-                hardWareManager.switchWhiteLight(true);
-                hardWareManager.setWhiteLightLevel(level);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            int level = -1;
+//            message = message.trim();
+//            if (message.startsWith("{")) {
+//                JSONObject obj = new JSONObject(message);
+//                if (obj.has("white")) {
+//                    level = obj.getInt("white");
+//                }
+//            } else {
+//                level = Integer.parseInt(message);
+//            }
+//
+//            if (level == 0) {
+//                hardWareManager.switchWhiteLight(false);
+//            } else if (level >= 1 && level <= 3) {
+//                hardWareManager.switchWhiteLight(true);
+//                hardWareManager.setWhiteLightLevel(level);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void handleMotionControl(String message) {
@@ -547,20 +631,20 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     }
 
     private void handleLedControl(String message) {
-        try {
-            JSONObject obj = new JSONObject(message);
-            String part = obj.optString("part", "all_head");
-            String mode = obj.optString("mode", "blue");
-            byte duration = (byte) obj.optInt("duration", 1);
-            byte random = (byte) obj.optInt("random", 1);
-
-            byte partByte = getLedPart(part);
-            byte modeByte = getLedMode(mode);
-
-            hardWareManager.setLED(new LED(partByte, modeByte, duration, random));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            JSONObject obj = new JSONObject(message);
+//            String part = obj.optString("part", "all_head");
+//            String mode = obj.optString("mode", "blue");
+//            byte duration = (byte) obj.optInt("duration", 1);
+//            byte random = (byte) obj.optInt("random", 1);
+//
+//            byte partByte = getLedPart(part);
+//            byte modeByte = getLedMode(mode);
+//
+//            hardWareManager.setLED(new LED(partByte, modeByte, duration, random));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private byte getLedPart(String part) {
@@ -596,17 +680,35 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
     }
 
-    private void handleSpeak(String message) {
+    private void handleSpeakAndroid(String message) {
         if (tts != null) {
             try {
                 JSONObject json = new JSONObject(message);
                 String texto = json.optString("msg", "");
                 if (!texto.isEmpty()) {
+                    tts.stop();
                     tts.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "mqtt_speak");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void handleSpeakSDK(String message){
+        try {
+            JSONObject json = new JSONObject(message);
+            String texto = json.optString("msg", "");
+            if (!texto.isEmpty() && speechManager != null) {
+                SpeakOption speakOption = new SpeakOption();
+                speakOption.setLanguageType(SpeakOption.LAG_ENGLISH_US);
+                speakOption.setSpeed(50);      // Velocidade de fala (0 a 100)
+                speakOption.setIntonation(50); // Entonação (0 a 100)
+                speechManager.stopSpeak();
+                speechManager.startSpeak(texto, speakOption);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -710,6 +812,18 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 publishHandler.postDelayed(this, 5000); // repete a cada 5 segundos
             }
         }, 5000);
+    }
+
+    private void publishSpeechToMqtt(String texto) {
+        if (mqttHandler != null && connected && texto != null && !texto.isEmpty()) {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("text", texto);
+                mqttHandler.publishMessage("sanbot/speech", json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

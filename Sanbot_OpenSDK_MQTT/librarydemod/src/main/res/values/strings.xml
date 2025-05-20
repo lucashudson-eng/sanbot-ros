@@ -11,6 +11,8 @@
         <item>sanbot/voice_angle</item>
         <item>sanbot/info</item>
         <item>sanbot/obstacle</item>
+        <item>sanbot/gyro</item>
+        <item>sanbot/speech</item>
         <item>ros/light</item>
         <item>ros/move</item>
         <item>ros/head</item>

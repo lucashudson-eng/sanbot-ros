@@ -12,6 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="RECOGNIZE_MODE"
+            android:value="1" />
+
         <activity
             android:name="com.grin.sanbotmqtt.MainActivity"
             android:exported="true">
@@ -25,7 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
     </application>
 
