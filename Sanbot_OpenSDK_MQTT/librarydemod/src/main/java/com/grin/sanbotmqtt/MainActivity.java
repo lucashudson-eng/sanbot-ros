@@ -99,12 +99,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-//            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//            startActivity(intent);
-//            Runtime.getRuntime().exit(0);  // Fecha de forma limpa
-//        });
 
         register(MainActivity.class);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -201,100 +195,100 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
         hardWareManager = (HardWareManager) getUnitManager(FuncConstant.HARDWARE_MANAGER);
 
-//        hardWareManager.setOnHareWareListener(
-//                new TouchSensorListener() {
-//                    @Override
-//                    public void onTouch(int part) {
-//                        try {
-//                            JSONObject touchJson = new JSONObject();
-//                            touchJson.put("part", part);
-//                            touchJson.put("description", getTouchPartName(part));
-//                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//        );
-//
-//        hardWareManager.setOnHareWareListener(
-//                new PIRListener() {
-//                    @Override
-//                    public void onPIRCheckResult(boolean isChecked, int part) {
-//                        try {
-//                            JSONObject pirJson = new JSONObject();
-//                            pirJson.put("part", part == 1 ? "front" : "back");
-//                            pirJson.put("status", isChecked ? 1 : 0);
-//                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//        );
-//
-//        hardWareManager.setOnHareWareListener(
-//                new InfrareListener() {
-//                    @Override
-//                    public void infrareDistance(int part, int distance) {
-//                        long now = System.currentTimeMillis();
-//                        Long last = lastIRUpdate.get(part); // pode ser null
-//
-//                        if (last == null || now - last >= IR_UPDATE_INTERVAL_MS) {
-//                            lastIRUpdate.put(part, now);
-//                            try {
-//                                JSONObject irJson = new JSONObject();
-//                                irJson.put("sensor", part);
-//                                irJson.put("distance_cm", distance);
-//                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }
-//        );
-//
-//        hardWareManager.setOnHareWareListener(new VoiceLocateListener() {
-//            @Override
-//            public void voiceLocateResult(int angle) {
-//                try {
-//                    JSONObject voiceJson = new JSONObject();
-//                    voiceJson.put("angle", angle);
-//                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        hardWareManager.setOnHareWareListener(new ObstacleListener() {
-//            @Override
-//            public void onObstacleStatus(boolean status) {
-//                try{
-//                    JSONObject json = new JSONObject();
-//                    json.put("status", 1);
-//                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        hardWareManager.setOnHareWareListener(new GyroscopeListener() {
-//            @Override
-//            public void gyroscopeData(float x, float y, float z) {
-//                try {
-//                    JSONObject gyroJson = new JSONObject();
-//                    gyroJson.put("x", x);
-//                    gyroJson.put("y", y);
-//                    gyroJson.put("z", z);
-//                    mqttHandler.publishMessage("sanbot/gyro", gyroJson.toString());
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        hardWareManager.setOnHareWareListener(
+                new TouchSensorListener() {
+                    @Override
+                    public void onTouch(int part) {
+                        try {
+                            JSONObject touchJson = new JSONObject();
+                            touchJson.put("part", part);
+                            touchJson.put("description", getTouchPartName(part));
+                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(
+                new PIRListener() {
+                    @Override
+                    public void onPIRCheckResult(boolean isChecked, int part) {
+                        try {
+                            JSONObject pirJson = new JSONObject();
+                            pirJson.put("part", part == 1 ? "front" : "back");
+                            pirJson.put("status", isChecked ? 1 : 0);
+                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(
+                new InfrareListener() {
+                    @Override
+                    public void infrareDistance(int part, int distance) {
+                        long now = System.currentTimeMillis();
+                        Long last = lastIRUpdate.get(part); // pode ser null
+
+                        if (last == null || now - last >= IR_UPDATE_INTERVAL_MS) {
+                            lastIRUpdate.put(part, now);
+                            try {
+                                JSONObject irJson = new JSONObject();
+                                irJson.put("sensor", part);
+                                irJson.put("distance_cm", distance);
+                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+        );
+
+        hardWareManager.setOnHareWareListener(new VoiceLocateListener() {
+            @Override
+            public void voiceLocateResult(int angle) {
+                try {
+                    JSONObject voiceJson = new JSONObject();
+                    voiceJson.put("angle", angle);
+                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        hardWareManager.setOnHareWareListener(new ObstacleListener() {
+            @Override
+            public void onObstacleStatus(boolean status) {
+                try{
+                    JSONObject json = new JSONObject();
+                    json.put("status", 1);
+                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        hardWareManager.setOnHareWareListener(new GyroscopeListener() {
+            @Override
+            public void gyroscopeData(float x, float y, float z) {
+                try {
+                    JSONObject gyroJson = new JSONObject();
+                    gyroJson.put("x", x);
+                    gyroJson.put("y", y);
+                    gyroJson.put("z", z);
+                    mqttHandler.publishMessage("sanbot/gyro", gyroJson.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         // Inicializa o MJPEG Server
         mjpegServer = new MjpegServer(8080);
@@ -474,27 +468,27 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     }
 
     private void handleLightControl(String message) {
-//        try {
-//            int level = -1;
-//            message = message.trim();
-//            if (message.startsWith("{")) {
-//                JSONObject obj = new JSONObject(message);
-//                if (obj.has("white")) {
-//                    level = obj.getInt("white");
-//                }
-//            } else {
-//                level = Integer.parseInt(message);
-//            }
-//
-//            if (level == 0) {
-//                hardWareManager.switchWhiteLight(false);
-//            } else if (level >= 1 && level <= 3) {
-//                hardWareManager.switchWhiteLight(true);
-//                hardWareManager.setWhiteLightLevel(level);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            int level = -1;
+            message = message.trim();
+            if (message.startsWith("{")) {
+                JSONObject obj = new JSONObject(message);
+                if (obj.has("white")) {
+                    level = obj.getInt("white");
+                }
+            } else {
+                level = Integer.parseInt(message);
+            }
+
+            if (level == 0) {
+                hardWareManager.switchWhiteLight(false);
+            } else if (level >= 1 && level <= 3) {
+                hardWareManager.switchWhiteLight(true);
+                hardWareManager.setWhiteLightLevel(level);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleMotionControl(String message) {
@@ -631,20 +625,20 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     }
 
     private void handleLedControl(String message) {
-//        try {
-//            JSONObject obj = new JSONObject(message);
-//            String part = obj.optString("part", "all_head");
-//            String mode = obj.optString("mode", "blue");
-//            byte duration = (byte) obj.optInt("duration", 1);
-//            byte random = (byte) obj.optInt("random", 1);
-//
-//            byte partByte = getLedPart(part);
-//            byte modeByte = getLedMode(mode);
-//
-//            hardWareManager.setLED(new LED(partByte, modeByte, duration, random));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            JSONObject obj = new JSONObject(message);
+            String part = obj.optString("part", "all_head");
+            String mode = obj.optString("mode", "blue");
+            byte duration = (byte) obj.optInt("duration", 1);
+            byte random = (byte) obj.optInt("random", 1);
+
+            byte partByte = getLedPart(part);
+            byte modeByte = getLedMode(mode);
+
+            hardWareManager.setLED(new LED(partByte, modeByte, duration, random));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private byte getLedPart(String part) {
