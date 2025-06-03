@@ -1,2 +1,4 @@
-paho-mqtt
-opencv-python
+paho-mqtt>=1.6.1
+opencv-python>=4.5.0
+numpy>=1.20.0
+tf-transformations>=0.2.0
