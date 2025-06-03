@@ -124,24 +124,24 @@ roslaunch sanbot_ros bridge.launch
 
 ### :white_check_mark: Available Topics
 
-| **Topic**                          | **Direction** | **Description**                                              | **Message Format Example** |
-|-----------------------------------|---------------|--------------------------------------------------------------|-----------------------------|
-| `sanbot/touch`                   | subscribe       | Touch sensor                                                | `{"part": 3, "description": "chest_right"}` |
-| `sanbot/pir`                     | subscribe       | PIR presence sensor (front or back)                         | `{"part": "front", "status": 1}` |
-| `sanbot/ir`                      | subscribe       | Infrared sensor (distance in cm)                            | `{"sensor": 1, "distance_cm": 45}` |
-| `sanbot/voice_angle`             | subscribe       | Angle of detected voice                                     | `{"angle": 123}` |
-| `sanbot/obstacle`                | subscribe       | Obstacle detection sensor                                   | `{"status": 1}` |
-| `sanbot/battery`                 | subscribe       | Battery level and charging status                           | `{"battery_level": 82, "battery_status": "charging_by_wire"}` |
-| `sanbot/info`                    | subscribe       | System information                                          | `{"robot_id": "...", "ip": "..."}` |
-| `sanbot/camera`                  | subscribe       | HD camera video stream                                      | `sensor_msgs/Image` |
-| `sanbot/gyro`                    | subscribe       | Robot orientation angles                                    | `sensor_msgs/Imu` |
-| `sanbot/speech`                  | subscribe       | Speech recognition results (English)                        | `{"text": "recognized speech text"}` |
-| `ros/light`                      | publish         | White forehead LED control                                  | `{"white": 2}` |
-| `ros/move`                       | publish         | Robot movement control                                      | `{"direction": "forward", "speed": 6}` |
-| `ros/cmd_vel`                    | publish         | Standard ROS velocity control                               | `geometry_msgs/Twist` |
-| `ros/head`                       | publish         | Head movement control                                       | `{"direction": "up", "angle": 10}` |
-| `ros/led`                        | publish         | Color LED control                                           | `{"part": "all_head", "mode": "blue"}` |
-| `ros/speak`                      | publish         | Text-to-speech (English)                                    | `{"msg": "Hello World"}` |
+| **Topic**                          | **Direction** | **Description**                                              | **Message Type** | **Example/Details** |
+|-----------------------------------|---------------|--------------------------------------------------------------|-----------------|-------------------|
+| `sanbot/touch`                   | subscribe       | Touch sensor                                                | `std_msgs/String` | `{"part": 3, "description": "chest_right"}` |
+| `sanbot/pir`                     | subscribe       | PIR presence sensor (front or back)                         | `std_msgs/String` | `{"part": "front", "status": 1}` |
+| `sanbot/ir`                      | subscribe       | Infrared distance sensor                                    | `sensor_msgs/Range` | Range in meters, radiation_type=INFRARED |
+| `sanbot/voice_angle`             | subscribe       | Angle of detected voice                                     | `std_msgs/Int32` | Value in degrees (0-360) |
+| `sanbot/obstacle`                | subscribe       | Obstacle detection sensor                                   | `std_msgs/Bool` | true = obstacle detected |
+| `sanbot/battery`                 | subscribe       | Battery status                                              | `sensor_msgs/BatteryState` | Percentage, status, technology=LION |
+| `sanbot/info`                    | subscribe       | System information                                          | `std_msgs/String` | `{"robot_id": "...", "ip": "..."}` |
+| `sanbot/camera`                  | subscribe       | HD camera video stream                                      | `sensor_msgs/Image` | 1280x720 BGR8 image |
+| `sanbot/gyro`                    | subscribe       | Robot orientation                                           | `sensor_msgs/Imu` | Orientation quaternion |
+| `sanbot/speech`                  | subscribe       | Speech recognition results (English)                        | `std_msgs/String` | `{"text": "recognized speech text"}` |
+| `ros/light`                      | publish         | White forehead LED control                                  | `std_msgs/UInt8` | Value 0-3 (off, low, medium, high) |
+| `ros/move`                       | publish         | Robot movement control                                      | `std_msgs/String` | `{"direction": "forward", "speed": 6}` |
+| `ros/cmd_vel`                    | publish         | Standard ROS velocity control                               | `geometry_msgs/Twist` | Linear and angular velocities |
+| `ros/head`                       | publish         | Head movement control                                       | `std_msgs/String` | `{"direction": "up", "angle": 10}` |
+| `ros/led`                        | publish         | Color LED control                                           | `std_msgs/String` | `{"part": "all_head", "mode": "blue"}` |
+| `ros/speak`                      | publish         | Text-to-speech (English)                                    | `std_msgs/String` | `{"msg": "Hello World"}` |
 
 ### 📝 Detailed Topic Descriptions
 
@@ -165,26 +165,27 @@ PIR (Passive Infrared) presence detection sensors.
 - **Locations**: "front" or "back"
 - **Status**: 1 = presence detected, 0 = no presence
 
-##### `sanbot/ir`
+##### `sanbot/ir` (sensor_msgs/Range)
 Infrared distance sensor readings.
-- **Format**: `{"sensor": <sensor_id>, "distance_cm": <distance>}`
-- **Distance**: Range in centimeters (0-100)
+- **Frame ID**: `ir_sensor_X` (where X is the sensor number)
+- **Field of View**: ~5 degrees
+- **Range**: 0.0 to 0.64 meters
+- **Radiation Type**: INFRARED
 
-##### `sanbot/voice_angle`
+##### `sanbot/voice_angle` (std_msgs/Int32)
 Sound source localization angle.
-- **Format**: `{"angle": <degrees>}`
-- **Angle**: 0-360 degrees, indicating sound source direction
+- **Value**: 0-360 degrees, indicating sound source direction
 
-##### `sanbot/obstacle`
+##### `sanbot/obstacle` (std_msgs/Bool)
 Obstacle detection sensor status.
-- **Format**: `{"status": <0|1>}`
-- **Status**: 1 = obstacle detected, 0 = no obstacle
+- **Value**: true = obstacle detected, false = no obstacle
 
-##### `sanbot/battery`
+##### `sanbot/battery` (sensor_msgs/BatteryState)
 Battery status information.
-- **Format**: `{"battery_level": <percentage>, "battery_status": "<status>"}`
-- **Level**: 0-100
-- **Status**: "not_charging", "charging_by_pile", "charging_by_wire"
+- **Percentage**: 0.0 to 1.0 (0% to 100%)
+- **Status**: FULL(4), CHARGING(1), or NOT_CHARGING(3)
+- **Technology**: LION (Lithium-ion)
+- **Capacity**: 20.0 Ah
 
 ##### `sanbot/info`
 System information and robot status.
@@ -215,14 +216,25 @@ Robot orientation in 3D space.
 Speech recognition results.
 - **Format**: `{"text": "<recognized_text>"}`
 - **Language**: English
-- **Note**: Recognition works best in quiet environments
 
 #### Control Topics (Publish)
 
 ##### `ros/light`
 Control the white forehead LED.
-- **Format**: `{"white": <level>}`
-- **Level**: 0 = off, 1-3 = brightness levels
+- **Type**: `std_msgs/UInt8`
+- **Values**: 
+  - 0: Off
+  - 1: Low brightness
+  - 2: Medium brightness
+  - 3: High brightness
+- **Example**: 
+  ```bash
+  # Turn on LED at medium brightness
+  rostopic pub /ros/light std_msgs/UInt8 "data: 2"
+  
+  # Turn off LED
+  rostopic pub /ros/light std_msgs/UInt8 "data: 0"
+  ```
 
 ##### `ros/move`
 Direct robot movement control.

@@ -3,7 +3,7 @@ import rospy
 import json
 import paho.mqtt.client as mqtt
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
+from std_msgs.msg import String, UInt8
 
 # Configurações do MQTT
 MQTT_BROKER_IP = "localhost"
@@ -69,12 +69,10 @@ def callback_head(msg):
         rospy.logwarn(f"Erro no JSON de ros/head: {e}")
 
 def callback_light(msg):
-    try:
-        data = json.loads(msg.data)
-        mqtt_client.publish(TOPIC_LIGHT, json.dumps(data))
-        rospy.loginfo(f"[MQTT] ros/light: {data}")
-    except Exception as e:
-        rospy.logwarn(f"Erro no JSON de ros/light: {e}")
+    # Converter UInt8 para o formato esperado pelo MQTT
+    payload = {"white": msg.data}
+    mqtt_client.publish(TOPIC_LIGHT, json.dumps(payload))
+    rospy.loginfo(f"[MQTT] ros/light: {payload}")
 
 def callback_led(msg):
     try:
@@ -108,7 +106,7 @@ if __name__ == "__main__":
     rospy.Subscriber("/ros/cmd_vel", Twist, callback_cmd_vel)
     rospy.Subscriber("/ros/move", String, callback_move)
     rospy.Subscriber("/ros/head", String, callback_head)
-    rospy.Subscriber("/ros/light", String, callback_light)
+    rospy.Subscriber("/ros/light", UInt8, callback_light)
     rospy.Subscriber("/ros/led", String, callback_led)
     rospy.Subscriber("/ros/speak", String, callback_speak)
 
