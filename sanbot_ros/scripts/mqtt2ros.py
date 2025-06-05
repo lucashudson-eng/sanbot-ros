@@ -23,7 +23,6 @@ topics = {
     "sanbot/info": "sanbot/info",
     "sanbot/speech": "sanbot/speech",
     "sanbot/gyro": "sanbot/gyro",
-    "ros/light": "ros/light",
 }
 
 ros_publishers = {}
@@ -259,8 +258,6 @@ if __name__ == "__main__":
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, Int32, queue_size=10)
         elif mqtt_topic == "sanbot/obstacle":
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, Bool, queue_size=10)
-        elif mqtt_topic == "ros/light":
-            ros_publishers[ros_topic] = rospy.Publisher(ros_topic, UInt8, queue_size=10)
         else:
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, String, queue_size=10)
 
