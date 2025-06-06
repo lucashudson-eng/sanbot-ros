@@ -124,33 +124,34 @@ roslaunch sanbot_ros bridge.launch
 
 ### :white_check_mark: Available Topics
 
-| **Topic**                          | **Direction** | **Description**                                              | **Message Type** | **Example/Details** |
-|-----------------------------------|---------------|--------------------------------------------------------------|-----------------|-------------------|
-| `sanbot/touch`                   | subscribe       | Touch sensor                                                | `std_msgs/String` | `{"part": 3, "description": "chest_right"}` |
-| `sanbot/pir`                     | subscribe       | PIR presence sensor (front or back)                         | `std_msgs/String` | `{"part": "front", "status": 1}` |
-| `sanbot/ir`                      | subscribe       | Infrared distance sensor                                    | `sensor_msgs/Range` | Range in meters, radiation_type=INFRARED |
-| `sanbot/voice_angle`             | subscribe       | Angle of detected voice                                     | `std_msgs/Int32` | Value in degrees (0-360) |
-| `sanbot/obstacle`                | subscribe       | Obstacle detection sensor                                   | `std_msgs/Bool` | true = obstacle detected |
-| `sanbot/battery`                 | subscribe       | Battery status                                              | `sensor_msgs/BatteryState` | Percentage, status, technology=LION |
-| `sanbot/info`                    | subscribe       | System information                                          | `std_msgs/String` | `{"robot_id": "...", "ip": "..."}` |
-| `sanbot/camera`                  | subscribe       | HD camera video stream                                      | `sensor_msgs/Image` | 1280x720 BGR8 image |
-| `sanbot/gyro`                    | subscribe       | Robot orientation                                           | `sensor_msgs/Imu` | Orientation quaternion |
-| `sanbot/speech`                  | subscribe       | Speech recognition results (English)                        | `std_msgs/String` | `{"text": "recognized speech text"}` |
-| `ros/light`                      | publish         | White forehead LED control                                  | `std_msgs/UInt8` | Value 0-3 (off, low, medium, high) |
-| `ros/move`                       | publish         | Robot movement control                                      | `std_msgs/String` | `{"direction": "forward", "speed": 6}` |
-| `ros/cmd_vel`                    | publish         | Standard ROS velocity control                               | `geometry_msgs/Twist` | Linear and angular velocities |
-| `ros/head`                       | publish         | Head movement control                                       | `std_msgs/String` | `{"direction": "up", "angle": 10}` |
-| `ros/led`                        | publish         | Color LED control                                           | `std_msgs/String` | `{"part": "all_head", "mode": "blue"}` |
-| `ros/speak`                      | publish         | Text-to-speech (English)                                    | `std_msgs/String` | `{"msg": "Hello World"}` |
+| **Topic**           | **Direction** | **Description**                            | **Message Type**     | **Example/Details**                       |
+|---------------------|---------------|--------------------------------------------|----------------------|-------------------------------------------|
+| `sanbot/touch`      | subscribe     | Touch sensor                                | `std_msgs/String`     | `'3 chest_right'`                          |
+| `sanbot/pir`        | subscribe     | PIR presence sensor                         | `std_msgs/String`     | `'front 1'`                                |
+| `sanbot/ir`         | subscribe     | Infrared distance sensor                    | `sensor_msgs/Range`   | Range in meters, radiation_type=INFRARED |
+| `sanbot/voice_angle`| subscribe     | Angle of detected voice                     | `std_msgs/Int32`      | 0–360 degrees                            |
+| `sanbot/obstacle`   | subscribe     | Obstacle detection sensor                   | `std_msgs/Bool`       | true / false                             |
+| `sanbot/battery`    | subscribe     | Battery status                              | `sensor_msgs/BatteryState` | Percentage, status, etc.        |
+| `sanbot/info`       | subscribe     | System information                          | `std_msgs/String`     | `'9ad1e4c2f058d23761c9b035de74a1fc 192.168.0.100 1.2.0 6.0.1 0.1.118'`                  |
+| `sanbot/camera`     | subscribe     | HD camera video stream                      | `sensor_msgs/Image`   | 1280x720 BGR8                            |
+| `sanbot/gyro`       | subscribe     | Robot orientation                           | `sensor_msgs/Imu`     | Quaternion                               |
+| `sanbot/speech`     | subscribe     | Speech recognition result                   | `std_msgs/String`     | `'Hello Sanbot'`                           |
+| `ros/light`         | publish       | White forehead LED control                  | `std_msgs/UInt8`      | `data: 2`                                |
+| `ros/move`          | publish       | Movement control (string format)            | `std_msgs/String`     | `'forward 6 100 2'`                      |
+| `ros/cmd_vel`       | publish       | Standard ROS velocity control               | `geometry_msgs/Twist` | Linear and angular velocities            |
+| `ros/head`          | publish       | Head movement (string format)               | `std_msgs/String`     | `'up 30 80 2'`                           |
+| `ros/led`           | publish       | Color LED control (string format)           | `std_msgs/String`     | `'all_head blue 10 1'`                   |
+| `ros/speak`         | publish       | Text-to-speech (string only)                | `std_msgs/String`     | `'Hello, I am Sanbot'`                   |
 
 ### 📝 Detailed Topic Descriptions
 
 #### Sensor Topics (Subscribe)
 
 ##### `sanbot/touch`
-Touch sensor events from various parts of the robot.
-- **Format**: `{"part": <part_id>, "description": "<location>"}`
-- **Part IDs**:
+Touch sensor events are published as space-separated strings.
+- **Type**: std_msgs/String
+- **Format**: `'part description'`
+- **Part Description**:
   - 1-2: Chin (right, left)
   - 3-4: Chest (right, left)
   - 5-6: Back head (left, right)
@@ -158,17 +159,25 @@ Touch sensor events from various parts of the robot.
   - 9-10: Hand (left, right)
   - 11: Head middle
   - 12-13: Head front (right, left)
+- **Example**:
+  ```bash
+  data: '3 chest_right'
+  ```
 
 ##### `sanbot/pir`
-PIR (Passive Infrared) presence detection sensors.
-- **Format**: `{"part": "<location>", "status": <0|1>}`
+PIR presence detection is published as a simple string.
+- **Type**: std_msgs/String
+- **Format**: `'location status'`
 - **Locations**: "front" or "back"
 - **Status**: 1 = presence detected, 0 = no presence
+- **Example**:
+  ```bash
+  data: 'front 1'
+  ```
 
 ##### `sanbot/ir` (sensor_msgs/Range)
 Infrared distance sensor readings.
 - **Frame ID**: `ir_sensor_X` (where X is the sensor number)
-- **Field of View**: ~5 degrees
 - **Range**: 0.0 to 0.64 meters
 - **Radiation Type**: INFRARED
 
@@ -188,17 +197,13 @@ Battery status information.
 - **Capacity**: 20.0 Ah
 
 ##### `sanbot/info`
-System information and robot status.
-- **Format**: 
-```json
-{
-  "robot_id": "<id>",
-  "ip": "<ip_address>",
-  "main_service_version": "<version>",
-  "android_version": "<version>",
-  "device_model": "<model>"
-}
-```
+Provides system information about the robot and automatically triggers the video stream when a valid IP is received.
+- **Type**: std_msgs/String
+- **Format**: `'robot_id ip main_service_version android_version device_model'`
+- **Example**:
+  ```bash
+  data: '9ad1e4c2f058d23761c9b035de74a1fc 192.168.0.100 1.2.0 6.0.1 0.1.118'
+  ```
 
 ##### `sanbot/camera`
 HD camera video stream.
@@ -213,9 +218,14 @@ Robot orientation in 3D space.
 - **Frame**: "base_link"
 
 ##### `sanbot/speech`
-Speech recognition results.
-- **Format**: `{"text": "<recognized_text>"}`
+Speech recognition result is published as a simple string.
+- **Type**: std_msgs/String
+- **Format**: `'msg'`
 - **Language**: English
+- **Example**:
+  ```bash
+  data: 'Hello, how are you?'
+  ```
 
 #### Control Topics (Publish)
 
@@ -237,16 +247,21 @@ Control the white forehead LED.
   ```
 
 ##### `ros/move`
-Direct robot movement control.
-- **Format**: `{"direction": "<direction>", "speed": <1-10>, "distance": <cm>, "duration": <seconds>}`
-- **Directions**:
-  - Basic: "forward", "backward", "left", "right", "stop"
-  - Combined: "left_forward", "right_forward", "left_back", "right_back"
-  - Rotation: "turn_left", "turn_right"
-- **Parameters**:
-  - speed: Movement speed (1-10) (optional)
-  - distance: Movement distance in cm (optional)
-  - duration: Movement duration in seconds (optional)
+Controls robot movement using space-separated string input.
+- **Type**: std_msgs/String
+- **Format**: `'direction [speed] [distance] [duration]'`
+- **c**:
+  - direction:
+    - basic: "forward", "backward", "left", "right", "stop" (linear.x or linexar.y)
+    - combined: "left_forward", "right_forward", "left_back", "right_back" (linear.x with linear.y)
+    - rotation: "turn_left", "turn_right" (angular.z)
+  - speed: Movement speed (1-10) (optional, defautlt to 5)
+  - distance: Movement distance in cm/degree (optional, defautl to forever)
+  - duration: Movement duration in seconds (optional, defautlt to forever, priority in relation to distance)
+- **Example**: 
+  ```bash
+  rostopic pub /ros/move std_msgs/String "data: 'forward 7 0 2'"
+  ```
 
 ##### `ros/cmd_vel`
 Standard ROS velocity control.
@@ -256,38 +271,61 @@ Standard ROS velocity control.
   - linear.y: Left/right velocity (-1.0 to 1.0)
   - angular.z: Rotation velocity (-1.0 to 1.0)
 - **Note**: Preferred method for smooth continuous movement
+- **Example**: 
+  ```bash
+  rostopic pub /ros/cmd_vel geometry_msgs/Twist "linear:
+    x: 0.5
+    y: 0.8
+    z: 0.0
+  angular:
+    x: 0.0
+    y: 0.0
+    z: 0.0"
+  ```
 
 ##### `ros/head`
-Control robot's head movement.
-- **Format**: `{"direction": "<direction>", "angle": <degrees>, "motor": <motor_id>, "speed": <1-100>}`
-- **Directions**: "up", "down", "left", "right"
-- **Motors**:
-  - 1: Neck movement
-  - 2: Vertical movement
-  - 3: Horizontal movement
-- **Parameters**:
-  - angle: Movement angle in degrees (0-90)
-  - speed: Movement speed (1-100)
+Controls head movement using space-separated string input.
+- **Type**: std_msgs/String
+- **Format**: `'direction [angle] [speed] [motor]'`
+- **Parameters**: 
+  - direction: "up", "down", "left", "right"
+  - angle: in degrees (optional, default to 10)
+  - speed: speed percentage (optional, default to 50)
+  - motor: 1 (neck), 2 (vertical), 3 (horizontal) (optional, default to 1)
+- **Example**: 
+  ```bash
+  rostopic pub /ros/head std_msgs/String "data: 'up 30 80'"
+  ```
 
 ##### `ros/led`
-Control colored LED lights.
-- **Format**: `{"part": "<location>", "mode": "<color>", "duration": <seconds>, "random": <0|1>}`
-- **Locations**:
-  - "all_head", "all_hand": All head/hand LEDs
-  - "head_left", "head_right": Individual head LEDs
-  - "arm_left", "arm_right": Individual hand LEDs
-- **Colors**: 
-  - Normal mode: "white", "red", "green", "blue", "yellow", "purple", "pink"
-  - Flicker mode: "flicker_white", "flicker_red", "flicker_green", "flicker_pink", "flicker_purple", "flicker_blue", "flicker_yellow", "flicker_random"
-- **Parameters**:
-  - duration: Light effect duration in seconds (0 = infinite)
-  - random: Enable random color mode (0 or 1)
+Controls color LEDs using space-separated string input.
+- **Type**: std_msgs/String
+- **Format**: `'part mode [duration] [random]'`
+- **Parameters**: 
+  - part:
+    - "all_head", "all_hand": All head/hand LEDs
+    - "head_left", "head_right": Individual head LEDs
+    - "arm_left", "arm_right": Individual hand LEDs
+  - mode:
+    - Normal mode: "white", "red", "green", "blue", "yellow", "purple", "pink"
+    - Flicker mode: "flicker_white", "flicker_red", "flicker_green", "flicker_pink", "flicker_purple", "flicker_blue", "flicker_yellow", "flicker_random"
+  - duration: seconds (optional, default to 1)
+  - random: 0 or 1 (optional, default to 1)
+- **Example**: 
+  ```bash
+  rostopic pub /ros/led std_msgs/String "data: 'all_head blue 5'"
+  ```
 
 ##### `ros/speak`
-Text-to-speech command.
-- **Format**: `{"msg": "<text>"}`
+Triggers text-to-speech using a plain string.
+- **Type**: std_msgs/String
+- **Format**: `'text'`
 - **Language**: English
 - **Volume**: Fixed at system volume level
+- **Example**: 
+  ```bash
+  rostopic pub /ros/speak std_msgs/String "data: 'Hello, I am Sanbot!'"
+  ```
 
 ## :handshake: Contributing
 

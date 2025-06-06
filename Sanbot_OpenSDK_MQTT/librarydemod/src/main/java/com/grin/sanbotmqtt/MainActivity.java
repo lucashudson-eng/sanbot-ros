@@ -129,9 +129,9 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
         mqttHandler.setBrokerIp(lastIp);
 
-        mqttHandler.connect();
-        buttonConnect.setEnabled(false);
-        buttonConnect.setText("Conectando...");
+//        mqttHandler.connect();
+//        buttonConnect.setEnabled(false);
+//        buttonConnect.setText("Conectando...");
 
         spinnerTopics.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -812,7 +812,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         if (mqttHandler != null && connected && texto != null && !texto.isEmpty()) {
             try {
                 JSONObject json = new JSONObject();
-                json.put("text", texto);
+                json.put("msg", texto);
                 mqttHandler.publishMessage("sanbot/speech", json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
