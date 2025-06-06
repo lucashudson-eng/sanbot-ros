@@ -216,8 +216,22 @@ def on_message(client, userdata, msg):
             rospy.loginfo(f"🗣️ Speech recognized: {data['text']}")
         
         elif ros_topic:
-            # Handle other topics as before
-            ros_publishers[ros_topic].publish(payload)
+            try:
+                data = json.loads(payload)
+                if isinstance(data, dict):
+                    # Concatena os valores do dicionário em uma string separada por espaço
+                    string_msg = String()
+                    string_msg.data = ' '.join(str(v) for v in data.values())
+                    ros_publishers[ros_topic].publish(string_msg)
+                    rospy.loginfo(f"[ROS] {ros_topic} <- '{string_msg.data}'")
+                else:
+                    # Se não for dicionário (por exemplo, string direta ou número), publica como está
+                    msg = String()
+                    msg.data = str(data)
+                    ros_publishers[ros_topic].publish(msg)
+                    rospy.loginfo(f"[ROS] {ros_topic} <- '{msg.data}'")
+            except Exception as e:
+                rospy.logwarn(f"Erro ao converter JSON para string simples em {ros_topic}: {e}")
 
         if msg.topic == "sanbot/info" and not video_started:
             data = json.loads(payload)

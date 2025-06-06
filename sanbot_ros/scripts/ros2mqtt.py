@@ -53,42 +53,79 @@ def callback_cmd_vel(msg):
     rospy.loginfo(f"[MQTT] ros/move (from /cmd_vel): {payload}")
 
 def callback_move(msg):
+    data_str = msg.data.strip()
     try:
-        data = json.loads(msg.data)
+        parts = data_str.split()
+        direction = parts[0]
+        speed = int(parts[1]) if len(parts) > 1 else 5
+        distance = int(parts[2]) if len(parts) > 2 else None
+        duration = int(parts[3]) if len(parts) > 3 else None
+
+        data = {"direction": direction, "speed": speed}
+        if distance is not None:
+            data["distance"] = distance
+        if duration is not None:
+            data["duration"] = duration
+
         mqtt_client.publish(TOPIC_MOVE, json.dumps(data))
-        rospy.loginfo(f"[MQTT] ros/move (custom): {data}")
+        rospy.loginfo(f"[MQTT] ros/move: {data}")
     except Exception as e:
-        rospy.logwarn(f"Erro no JSON de /move: {e}")
+        rospy.logwarn(f"Erro ao interpretar comando ros/move: {e}")
 
 def callback_head(msg):
+    data_str = msg.data.strip()
     try:
-        data = json.loads(msg.data)
+        parts = data_str.split()
+        direction = parts[0]
+        angle = int(parts[1]) if len(parts) > 1 else 10
+        speed = int(parts[2]) if len(parts) > 2 else 50
+        motor = int(parts[3]) if len(parts) > 3 else 1
+
+        data = {
+            "direction": direction,
+            "angle": angle,
+            "speed": speed,
+            "motor": motor
+        }
+
         mqtt_client.publish(TOPIC_HEAD, json.dumps(data))
         rospy.loginfo(f"[MQTT] ros/head: {data}")
     except Exception as e:
-        rospy.logwarn(f"Erro no JSON de ros/head: {e}")
+        rospy.logwarn(f"Erro ao interpretar comando ros/head: {e}")
+
+def callback_led(msg):
+    data_str = msg.data.strip()
+    try:
+        parts = data_str.split()
+        part = parts[0]
+        mode = parts[1]
+        duration = int(parts[2]) if len(parts) > 2 else 1
+        random = int(parts[3]) if len(parts) > 3 else 1
+
+        data = {
+            "part": part,
+            "mode": mode,
+            "duration": duration,
+            "random": random
+        }
+
+        mqtt_client.publish(TOPIC_LED, json.dumps(data))
+        rospy.loginfo(f"[MQTT] ros/led: {data}")
+    except Exception as e:
+        rospy.logwarn(f"Erro ao interpretar comando ros/led: {e}")
+
+def callback_speak(msg):
+    data_str = msg.data.strip()
+    data = { "msg": data_str }
+
+    mqtt_client.publish(TOPIC_SPEAK, json.dumps(data))
+    rospy.loginfo(f"[MQTT] ros/speak: {data}")
 
 def callback_light(msg):
     # Converter UInt8 para o formato esperado pelo MQTT
     payload = {"white": msg.data}
     mqtt_client.publish(TOPIC_LIGHT, json.dumps(payload))
     rospy.loginfo(f"[MQTT] ros/light: {payload}")
-
-def callback_led(msg):
-    try:
-        data = json.loads(msg.data)
-        mqtt_client.publish(TOPIC_LED, json.dumps(data))
-        rospy.loginfo(f"[MQTT] ros/led: {data}")
-    except Exception as e:
-        rospy.logwarn(f"Erro no JSON de ros/led: {e}")
-
-def callback_speak(msg):
-    try:
-        data = json.loads(msg.data)
-        mqtt_client.publish(TOPIC_SPEAK, json.dumps(data))
-        rospy.loginfo(f"[MQTT] ros/speak: {data}")
-    except Exception as e:
-        rospy.logwarn(f"Erro no JSON de ros/speak: {e}")
 
 def on_connect(client, userdata, flags, rc):
     rospy.loginfo(f"Conectado ao broker MQTT (rc={rc})")
