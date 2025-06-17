@@ -3,6 +3,7 @@
 A ROS driver for interacting with Sanbot NANO robots via MQTT and ROS topics.
 
 ## :book: Table of Contents
+- [Custom Message Types](#-custom-message-types)
 - [Android Apps](#iphone-android-apps)
   - [Connection Setup](#electric_plug-connection-setup)
   - [App Installation](#package-app-installation)
@@ -11,6 +12,24 @@ A ROS driver for interacting with Sanbot NANO robots via MQTT and ROS topics.
   - [Running](#running)
   - [Available Topics](#white_check_mark-available-topics)
   - [Detailed Topic Descriptions](#-detailed-topic-descriptions)
+
+## 📦 Custom Message Types
+
+This package includes custom ROS message types for structured communication:
+
+- **`sanbot_ros/Info`**: System information (robot_id, ip, versions, device_model)
+- **`sanbot_ros/Move`**: Movement control (direction, speed, distance, duration)
+- **`sanbot_ros/Head`**: Head movement (direction, angle, speed, motor)
+- **`sanbot_ros/Led`**: LED control (part, mode, duration, random)
+
+### Optional Fields
+Fields marked as "optional" use `0` to indicate "not specified". When publishing via MQTT, fields with value `0` are automatically excluded from the JSON payload for cleaner communication.
+
+**Benefits:**
+- ✅ **Type Safety**: Structured messages prevent formatting errors
+- ✅ **Better Integration**: Native ROS message support
+- ✅ **Cleaner MQTT**: Optional fields automatically excluded
+- ✅ **IDE Support**: Autocomplete and validation in ROS development tools
 
 ## :iphone: Android Apps
 
@@ -132,16 +151,16 @@ roslaunch sanbot_ros bridge.launch
 | `sanbot/voice_angle`| subscribe     | Angle of detected voice                     | `std_msgs/Int32`      | 0–360 degrees                            |
 | `sanbot/obstacle`   | subscribe     | Obstacle detection sensor                   | `std_msgs/Bool`       | true / false                             |
 | `sanbot/battery`    | subscribe     | Battery status                              | `sensor_msgs/BatteryState` | Percentage, status, etc.        |
-| `sanbot/info`       | subscribe     | System information                          | `std_msgs/String`     | `'9ad1e4c2f058d23761c9b035de74a1fc 192.168.0.100 1.2.0 6.0.1 0.1.118'`                  |
+| `sanbot/info`       | subscribe     | System information                          | `sanbot_ros/Info`     | Structured robot information             |
 | `sanbot/camera`     | subscribe     | HD camera video stream                      | `sensor_msgs/Image`   | 1280x720 BGR8                            |
 | `sanbot/gyro`       | subscribe     | Robot orientation                           | `sensor_msgs/Imu`     | Quaternion                               |
 | `sanbot/speech`     | subscribe     | Speech recognition result                   | `std_msgs/String`     | `'Hello Sanbot'`                           |
 | `ros/light`         | publish       | White forehead LED control                  | `std_msgs/UInt8`      | `data: 2`                                |
-| `ros/move`          | publish       | Movement control (string format)            | `std_msgs/String`     | `'forward 6 100 2'`                      |
+| `ros/move`          | publish       | Movement control (structured format)        | `sanbot_ros/Move`     | Direction, speed, distance, duration     |
 | `ros/cmd_vel`       | publish       | Standard ROS velocity control               | `geometry_msgs/Twist` | Linear and angular velocities            |
-| `ros/head`          | publish       | Head movement (string format)               | `std_msgs/String`     | `'up 30 80 2'`                           |
-| `ros/led`           | publish       | Color LED control (string format)           | `std_msgs/String`     | `'all_head blue 10 1'`                   |
-| `ros/speak`         | publish       | Text-to-speech (string only)                | `std_msgs/String`     | `'Hello, I am Sanbot'`                   |
+| `ros/head`          | publish       | Head movement (structured format)           | `sanbot_ros/Head`     | Direction, angle, speed, motor           |
+| `ros/led`           | publish       | Color LED control (structured format)       | `sanbot_ros/Led`      | Part, mode, duration, random             |
+| `ros/speak`         | publish       | Text-to-speech                              | `std_msgs/String`     | `'Hello, I am Sanbot'`                   |
 
 ### 📝 Detailed Topic Descriptions
 
@@ -197,12 +216,21 @@ Battery status information.
 - **Capacity**: 20.0 Ah
 
 ##### `sanbot/info`
-Provides system information about the robot and automatically triggers the video stream when a valid IP is received.
-- **Type**: std_msgs/String
-- **Format**: `'robot_id ip main_service_version android_version device_model'`
+Provides system information about the robot in a structured format.
+- **Type**: sanbot_ros/Info
+- **Fields**:
+  - robot_id: Unique robot identifier
+  - ip: Robot's IP address
+  - main_service_version: Main service version
+  - android_version: Android OS version
+  - device_model: Device model information
 - **Example**:
   ```bash
-  data: '9ad1e4c2f058d23761c9b035de74a1fc 192.168.0.100 1.2.0 6.0.1 0.1.118'
+  robot_id: "9ad1e4c2f058d23761c9b035de74a1fc"
+  ip: "192.168.0.100"
+  main_service_version: "1.2.0"
+  android_version: "6.0.1"
+  device_model: "0.1.118"
   ```
 
 ##### `sanbot/camera`
@@ -247,20 +275,22 @@ Control the white forehead LED.
   ```
 
 ##### `ros/move`
-Controls robot movement using space-separated string input.
-- **Type**: std_msgs/String
-- **Format**: `'direction [speed] [distance] [duration]'`
-- **c**:
-  - direction:
-    - basic: "forward", "backward", "left", "right", "stop" (linear.x or linexar.y)
-    - combined: "left_forward", "right_forward", "left_back", "right_back" (linear.x with linear.y)
-    - rotation: "turn_left", "turn_right" (angular.z)
-  - speed: Movement speed (1-10) (optional, defautlt to 5)
-  - distance: Movement distance in cm/degree (optional, defautl to forever)
-  - duration: Movement duration in seconds (optional, defautlt to forever, priority in relation to distance)
+Controls robot movement using structured message format.
+- **Type**: sanbot_ros/Move
+- **Fields**:
+  - direction (string): Movement direction
+    - basic: "forward", "backward", "left", "right", "stop"
+    - combined: "left_forward", "right_forward", "left_back", "right_back"
+    - rotation: "turn_left", "turn_right"
+  - speed (int8): Movement speed 1-10 (optional, 0 = not specified)
+  - distance (int32): Movement distance in cm (optional, 0 = not specified)
+  - duration (int32): Movement duration in seconds (optional, 0 = not specified)
 - **Example**: 
   ```bash
-  rostopic pub /ros/move std_msgs/String "data: 'forward 7 0 2'"
+  rostopic pub /ros/move sanbot_ros/Move "direction: 'forward'
+  speed: 7
+  distance: 0
+  duration: 2"
   ```
 
 ##### `ros/cmd_vel`
@@ -284,36 +314,43 @@ Standard ROS velocity control.
   ```
 
 ##### `ros/head`
-Controls head movement using space-separated string input.
-- **Type**: std_msgs/String
-- **Format**: `'direction [angle] [speed] [motor]'`
-- **Parameters**: 
-  - direction: "up", "down", "left", "right"
-  - angle: in degrees (optional, default to 10)
-  - speed: speed percentage (optional, default to 50)
-  - motor: 1 (neck), 2 (vertical), 3 (horizontal) (optional, default to 1)
+Controls head movement using structured message format.
+- **Type**: sanbot_ros/Head
+- **Fields**:
+  - direction (string): "up", "down", "left", "right"
+  - angle (int16): Movement angle in degrees
+  - speed (int8): Speed percentage 1-100 (optional, 0 = not specified)
+  - motor (int8): Motor selection (optional, 0 = not specified)
+    - 1: neck
+    - 2: vertical
+    - 3: horizontal
 - **Example**: 
   ```bash
-  rostopic pub /ros/head std_msgs/String "data: 'up 30 80'"
+  rostopic pub /ros/head sanbot_ros/Head "direction: 'up'
+  angle: 30
+  speed: 80
+  motor: 0"
   ```
 
 ##### `ros/led`
-Controls color LEDs using space-separated string input.
-- **Type**: std_msgs/String
-- **Format**: `'part mode [duration] [random]'`
-- **Parameters**: 
-  - part:
+Controls color LEDs using structured message format.
+- **Type**: sanbot_ros/Led
+- **Fields**:
+  - part (string): LED part selection
     - "all_head", "all_hand": All head/hand LEDs
     - "head_left", "head_right": Individual head LEDs
     - "arm_left", "arm_right": Individual hand LEDs
-  - mode:
-    - Normal mode: "white", "red", "green", "blue", "yellow", "purple", "pink"
-    - Flicker mode: "flicker_white", "flicker_red", "flicker_green", "flicker_pink", "flicker_purple", "flicker_blue", "flicker_yellow", "flicker_random"
-  - duration: seconds (optional, default to 1)
-  - random: 0 or 1 (optional, default to 1)
+  - mode (string): LED mode
+    - Normal: "white", "red", "green", "blue", "yellow", "purple", "pink"
+    - Flicker: "flicker_white", "flicker_red", "flicker_green", "flicker_pink", "flicker_purple", "flicker_blue", "flicker_yellow", "flicker_random"
+  - duration (int8): Duration in seconds
+  - random (int8): Random mode (0 or 1)
 - **Example**: 
   ```bash
-  rostopic pub /ros/led std_msgs/String "data: 'all_head blue 5'"
+  rostopic pub /ros/led sanbot_ros/Led "part: 'all_head'
+  mode: 'blue'
+  duration: 5
+  random: 1"
   ```
 
 ##### `ros/speak`

@@ -4,6 +4,7 @@ import json
 import paho.mqtt.client as mqtt
 from std_msgs.msg import String, Int32, Bool, UInt8
 from sensor_msgs.msg import Image, Imu, BatteryState, Range
+from sanbot_ros.msg import Info, Move, Head, Led
 from cv_bridge import CvBridge
 import cv2
 import threading
@@ -65,9 +66,12 @@ def video_capture_loop(stream_url, pub):
     cap.release()
 
 def on_connect(client, userdata, flags, rc):
-    rospy.loginfo("✅ Conectado ao broker MQTT")
-    for topic in topics:
-        client.subscribe(topic)
+    if rc == 0:
+        rospy.loginfo("✅ Connected to MQTT broker")
+        for topic in topics.keys():
+            client.subscribe(topic)
+    else:
+        rospy.logwarn(f"❌ Failed to connect to MQTT broker. Code: {rc}")
 
 def on_message(client, userdata, msg):
     global camera_url, video_started
@@ -77,7 +81,7 @@ def on_message(client, userdata, msg):
         ros_topic = topics.get(msg.topic)
         
         if msg.topic == "sanbot/voice_angle":
-            # Converter ângulo da voz para Int32
+            # Convert voice angle to Int32
             data = json.loads(payload)
             angle_msg = Int32()
             angle_msg.data = int(data["angle"])
@@ -85,60 +89,61 @@ def on_message(client, userdata, msg):
             return
 
         elif msg.topic == "sanbot/obstacle":
-            # Converter detecção de obstáculo para Bool
+            # Convert obstacle detection to Bool
             data = json.loads(payload)
             obstacle_msg = Bool()
             obstacle_msg.data = bool(data["status"])
             ros_publishers[ros_topic].publish(obstacle_msg)
             return
 
-        elif msg.topic == "ros/light":
-            # Converter nível de luz para UInt8 (0-3)
+        elif msg.topic == "sanbot/info":
+            # Convert system information to Info
             data = json.loads(payload)
-            light_msg = UInt8()
-            if isinstance(data, dict) and "white" in data:
-                light_msg.data = int(data["white"])
-            else:
-                light_msg.data = int(data)
-            ros_publishers[ros_topic].publish(light_msg)
+            info_msg = Info()
+            info_msg.robot_id = data["robot_id"]
+            info_msg.ip = data["ip"]
+            info_msg.main_service_version = data["main_service_version"]
+            info_msg.android_version = data["android_version"]
+            info_msg.device_model = data["device_model"]
+            ros_publishers[ros_topic].publish(info_msg)
             return
 
         elif msg.topic == "sanbot/ir":
-            # Converter dados do IR para Range
+            # Convert IR data to Range
             data = json.loads(payload)
             range_msg = Range()
             range_msg.header.stamp = rospy.Time.now()
             range_msg.header.frame_id = f"ir_sensor_{data['sensor']}"
             
-            # Definir o tipo do sensor como IR
+            # Set sensor type as IR
             range_msg.radiation_type = Range.INFRARED
             
-            # Converter distância de cm para metros
+            # Convert distance from cm to meters
             range_msg.range = float(data["distance_cm"]) / 100.0
             
-            # Definir os limites do sensor (em metros)
+            # Set sensor limits (in meters)
             range_msg.min_range = 0.0  # 0 cm
             range_msg.max_range = 0.64  # 64 cm
             
-            # Definir o campo de visão (FOV) aproximado em radianos
-            # Usando um valor típico para sensores IR
-            range_msg.field_of_view = math.radians(5.0)  # ~5 graus
+            # Set approximate field of view (FOV) in radians
+            # Using a typical value for IR sensors
+            range_msg.field_of_view = math.radians(5.0)  # ~5 degrees
             
             ros_publishers[ros_topic].publish(range_msg)
             return
-            
+
         elif msg.topic == "sanbot/battery":
-            # Converter dados da bateria para BatteryState
+            # Convert battery data to BatteryState
             data = json.loads(payload)
             battery_msg = BatteryState()
             battery_msg.header.stamp = rospy.Time.now()
             battery_msg.header.frame_id = "battery"
             
-            # Converter porcentagem para valor entre 0 e 1
+            # Convert percentage to value between 0 and 1
             battery_level = float(data["battery_level"])
             battery_msg.percentage = battery_level / 100.0
             
-            # Definir o status de carregamento
+            # Set charging status
             if battery_level >= 100 and (data["battery_status"] == "charging_by_wire" or data["battery_status"] == "charging_by_pile"):
                 battery_msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_FULL
             elif data["battery_status"] == "charging_by_wire" or data["battery_status"] == "charging_by_pile":
@@ -146,17 +151,17 @@ def on_message(client, userdata, msg):
             else:  # not_charging
                 battery_msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_NOT_CHARGING
             
-            # Definir o tipo de bateria como Li-ion
+            # Set battery type as Li-ion
             battery_msg.power_supply_technology = BatteryState.POWER_SUPPLY_TECHNOLOGY_LION
             
-            # Definir capacidade da bateria em Ah
-            battery_msg.capacity = 20.0  # Capacidade atual em Ah
-            battery_msg.design_capacity = 20.0  # Capacidade de projeto em Ah
+            # Set battery capacity in Ah
+            battery_msg.capacity = 20.0  # Current capacity in Ah
+            battery_msg.design_capacity = 20.0  # Design capacity in Ah
             
-            # Indicar que a bateria está presente
+            # Indicate battery is present
             battery_msg.present = True
             
-            # Campos que não temos informação em tempo real
+            # Fields we don't have real-time info for
             battery_msg.voltage = float('nan')
             battery_msg.current = float('nan')
             battery_msg.charge = float('nan')
@@ -174,9 +179,6 @@ def on_message(client, userdata, msg):
             imu_msg.header.frame_id = "base_link"
             
             # Convert Euler angles (in degrees) to quaternion
-            # x = roll (rotation around X)
-            # y = pitch (rotation around Y)
-            # z = yaw (rotation around Z)
             quaternion = euler_to_quaternion(
                 float(data["x"]),  # roll
                 float(data["y"]),  # pitch
@@ -206,59 +208,20 @@ def on_message(client, userdata, msg):
             
             ros_publishers[ros_topic].publish(imu_msg)
             rospy.loginfo_throttle(1, f"📊 Orientation angles published: roll={data['x']}, pitch={data['y']}, yaw={data['z']}")
-        
-        elif msg.topic == "sanbot/speech":
-            # Handle speech recognition
-            data = json.loads(payload)
-            speech_msg = String()
-            speech_msg.data = data["text"]
-            ros_publishers[ros_topic].publish(speech_msg)
-            rospy.loginfo(f"🗣️ Speech recognized: {data['text']}")
-        
-        elif ros_topic:
-            try:
-                data = json.loads(payload)
-                if isinstance(data, dict):
-                    # Concatena os valores do dicionário em uma string separada por espaço
-                    string_msg = String()
-                    string_msg.data = ' '.join(str(v) for v in data.values())
-                    ros_publishers[ros_topic].publish(string_msg)
-                    rospy.loginfo(f"[ROS] {ros_topic} <- '{string_msg.data}'")
-                else:
-                    # Se não for dicionário (por exemplo, string direta ou número), publica como está
-                    msg = String()
-                    msg.data = str(data)
-                    ros_publishers[ros_topic].publish(msg)
-                    rospy.loginfo(f"[ROS] {ros_topic} <- '{msg.data}'")
-            except Exception as e:
-                rospy.logwarn(f"Erro ao converter JSON para string simples em {ros_topic}: {e}")
+            return
 
-        if msg.topic == "sanbot/info" and not video_started:
-            data = json.loads(payload)
-            ip = data.get("ip")
-            if ip:
-                stream_url = f"http://{ip}:8080"
-                ros_publishers["/sanbot/stream_url"].publish(stream_url)
-                rospy.loginfo(f"[INFO] URL do stream recebida: {stream_url}")
-
-                with lock:
-                    if not video_started:
-                        video_started = True
-                        t = threading.Thread(
-                            target=video_capture_loop,
-                            args=(stream_url, ros_publishers["/sanbot/camera"]),
-                            daemon=True
-                        )
-                        t.start()
+        # For other topics, publish as String
+        string_msg = String()
+        string_msg.data = payload
+        ros_publishers[ros_topic].publish(string_msg)
 
     except Exception as e:
-        rospy.logerr(f"Erro ao processar mensagem: {e}")
+        rospy.logerr(f"❌ Error processing MQTT message from topic '{msg.topic}': {e}")
 
 if __name__ == "__main__":
     rospy.init_node("mqtt_to_ros")
 
     # Publishers
-    ros_publishers["/sanbot/stream_url"] = rospy.Publisher("/sanbot/stream_url", String, queue_size=1)
     ros_publishers["/sanbot/camera"] = rospy.Publisher("/sanbot/camera", Image, queue_size=1)
 
     for mqtt_topic, ros_topic in topics.items():
@@ -272,6 +235,8 @@ if __name__ == "__main__":
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, Int32, queue_size=10)
         elif mqtt_topic == "sanbot/obstacle":
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, Bool, queue_size=10)
+        elif mqtt_topic == "sanbot/info":
+            ros_publishers[ros_topic] = rospy.Publisher(ros_topic, Info, queue_size=10)
         else:
             ros_publishers[ros_topic] = rospy.Publisher(ros_topic, String, queue_size=10)
 
@@ -282,5 +247,5 @@ if __name__ == "__main__":
     client.connect(MQTT_BROKER_IP, MQTT_PORT, 60)
     client.loop_start()
 
-    rospy.loginfo("🔁 Enviando comandos do ROS para o app Android via MQTT...")
+    rospy.loginfo("🔁 Sending ROS commands to Android app via MQTT...")
     rospy.spin()

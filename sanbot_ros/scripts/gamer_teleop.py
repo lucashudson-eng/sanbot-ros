@@ -4,24 +4,24 @@ from geometry_msgs.msg import Twist
 import sys, select, termios, tty
 
 msg = """
-Controles:
-  w = frente
-  s = trás
-  a = esquerda
-  d = direita
-  q = girar esquerda
-  e = girar direita
-  espaço = parar
+Controls:
+  w = forward
+  s = backward
+  a = left
+  d = right
+  q = turn left
+  e = turn right
+  space = stop
 
-Ajustes de velocidade:
-  + = aumentar linear e angular em 10%
-  - = diminuir linear e angular em 10%
-  [ = aumentar só linear
-  ] = diminuir só linear
-  { = aumentar só angular
-  } = diminuir só angular
+Speed adjustments:
+  + = increase linear and angular by 10%
+  - = decrease linear and angular by 10%
+  [ = increase linear only
+  ] = decrease linear only
+  { = increase angular only
+  } = decrease angular only
 
-CTRL+C = sair
+CTRL+C = exit
 """
 
 def get_key():
@@ -54,35 +54,35 @@ if __name__ == "__main__":
 
             twist = Twist()
 
-            # Ajuste de velocidade (sempre executa, sem filtro por last_key)
+            # Speed adjustment (always executes, no filter by last_key)
             if key == '+':
                 linear_speed = min(max_linear, linear_speed * 1.1)
                 angular_speed = min(max_angular, angular_speed * 1.1)
-                print(f">> Velocidade linear: {linear_speed:.2f}, angular: {angular_speed:.2f}")
+                print(f">> Linear speed: {linear_speed:.2f}, angular: {angular_speed:.2f}")
                 continue
             elif key == '-':
                 linear_speed = max(min_speed, linear_speed * 0.9)
                 angular_speed = max(min_speed, angular_speed * 0.9)
-                print(f">> Velocidade linear: {linear_speed:.2f}, angular: {angular_speed:.2f}")
+                print(f">> Linear speed: {linear_speed:.2f}, angular: {angular_speed:.2f}")
                 continue
             elif key == '[':
                 linear_speed = min(max_linear, linear_speed * 1.1)
-                print(f">> Velocidade linear: {linear_speed:.2f}")
+                print(f">> Linear speed: {linear_speed:.2f}")
                 continue
             elif key == ']':
                 linear_speed = max(min_speed, linear_speed * 0.9)
-                print(f">> Velocidade linear: {linear_speed:.2f}")
+                print(f">> Linear speed: {linear_speed:.2f}")
                 continue
             elif key == '{':
                 angular_speed = min(max_angular, angular_speed * 1.1)
-                print(f">> Velocidade angular: {angular_speed:.2f}")
+                print(f">> Angular speed: {angular_speed:.2f}")
                 continue
             elif key == '}':
                 angular_speed = max(min_speed, angular_speed * 0.9)
-                print(f">> Velocidade angular: {angular_speed:.2f}")
+                print(f">> Angular speed: {angular_speed:.2f}")
                 continue
 
-            # Movimento — agora sim filtra por tecla repetida
+            # Movement — now filters by repeated key
             if key == last_key or key == '':
                 continue
 
@@ -101,10 +101,10 @@ if __name__ == "__main__":
             elif key == ' ':
                 twist = Twist()
             else:
-                continue  # tecla não reconhecida
+                continue  # unrecognized key
 
             pub.publish(twist)
-            last_key = key  # só atualiza se foi movimento
+            last_key = key  # only updates if it was movement
 
     except Exception as e:
         print(e)
