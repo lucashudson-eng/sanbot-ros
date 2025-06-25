@@ -59,6 +59,10 @@ import com.sanbot.opensdk.function.beans.speech.Grammar;
 import com.sanbot.opensdk.function.beans.speech.RecognizeTextBean;
 import com.sanbot.opensdk.function.unit.interfaces.speech.RecognizeListener;
 import android.support.annotation.NonNull;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 
 
 public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener {
@@ -76,6 +80,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     private static final String PREFS_NAME = "mqtt_prefs";
     private static final String KEY_LAST_IP = "last_broker_ip";
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
 
     private SystemManager systemManager;
     private HardWareManager hardWareManager;
@@ -92,7 +97,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
 
     private HDCameraManager hdCameraManager;
-    private MjpegServer mjpegServer;
+    private MultiCameraMjpegServer multiCameraMjpegServer;
+    private AndroidCameraManager androidCameraManager;
     private int videoHandle = -1;
 
     private TextToSpeech tts;
@@ -173,6 +179,9 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         buttonClear.setOnClickListener(v -> textViewMessages.setText(""));
 
         tts = new TextToSpeech(this, this);
+        
+        // Verifica e solicita permissões de câmera
+        checkCameraPermissions();
     }
 
     @Override
@@ -290,14 +299,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         });
 
-        // Inicializa o MJPEG Server
-        mjpegServer = new MjpegServer(8080);
+        // Inicializa o Multi-Camera MJPEG Server
+        multiCameraMjpegServer = new MultiCameraMjpegServer(8080);
         try {
-            mjpegServer.start();
-            appendMessage("🌐 MJPEG disponível em: http://" + getLocalIpAddress() + ":8080");
+            multiCameraMjpegServer.start();
+            appendMessage("🌐 Multi-Camera MJPEG disponível em:");
+            appendMessage("📷 Câmera 1 (SDK): http://" + getLocalIpAddress() + ":8080/camera1");
+            appendMessage("📱 Câmera 2 (Android): http://" + getLocalIpAddress() + ":8080/camera2");
+            appendMessage("🏠 Página principal: http://" + getLocalIpAddress() + ":8080");
         } catch (IOException e) {
             e.printStackTrace();
-            appendMessage("❌ Erro ao iniciar o MJPEG server.");
+            appendMessage("❌ Erro ao iniciar o Multi-Camera MJPEG server.");
         }
 
         // Inicia o stream de vídeo
@@ -318,8 +330,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 lastFrameTime = now;
 
                 Bitmap bitmap = nv21ToBitmap(bytes, width, height);
-                if (bitmap != null && mjpegServer != null) {
-                    mjpegServer.updateFrame(bitmap);
+                if (bitmap != null && multiCameraMjpegServer != null) {
+                    multiCameraMjpegServer.updateFrame("camera1", bitmap);
                 }
             }
             @Override
@@ -345,6 +357,23 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         } else {
             appendMessage("❌ Falha ao iniciar stream: OperationResult é nulo.");
+        }
+
+        // Inicializa a câmera Android (Camera2 API)
+        androidCameraManager = new AndroidCameraManager(this);
+        androidCameraManager.setOnFrameAvailableListener(new AndroidCameraManager.OnFrameAvailableListener() {
+            @Override
+            public void onFrameAvailable(Bitmap frame) {
+                if (frame != null && multiCameraMjpegServer != null) {
+                    multiCameraMjpegServer.updateFrame("camera2", frame);
+                }
+            }
+        });
+
+        if (androidCameraManager.startCamera()) {
+            appendMessage("📱 Câmera Android iniciada com sucesso.");
+        } else {
+            appendMessage("❌ Falha ao iniciar câmera Android. Verifique as permissões.");
         }
 
         speechManager.setOnSpeechListener(new RecognizeListener() {
@@ -728,8 +757,32 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             hdCameraManager.closeStream(videoHandle);
             videoHandle = -1;
         }
-        if (mjpegServer != null) {
-            mjpegServer.stop();
+        if (androidCameraManager != null) {
+            androidCameraManager.stopCamera();
+        }
+        if (multiCameraMjpegServer != null) {
+            multiCameraMjpegServer.stop();
+        }
+    }
+
+    private void checkCameraPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, 
+                    new String[]{Manifest.permission.CAMERA}, 
+                    CAMERA_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                appendMessage("✅ Permissão de câmera concedida.");
+            } else {
+                appendMessage("❌ Permissão de câmera negada. A câmera Android não funcionará.");
+            }
         }
     }
 
@@ -740,8 +793,11 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         if (videoHandle != -1) {
             hdCameraManager.closeStream(videoHandle);
         }
-        if (mjpegServer != null) {
-            mjpegServer.stop();
+        if (androidCameraManager != null) {
+            androidCameraManager.stopCamera();
+        }
+        if (multiCameraMjpegServer != null) {
+            multiCameraMjpegServer.stop();
         }
         if (tts != null) {
             tts.stop();

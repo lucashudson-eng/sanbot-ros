@@ -152,7 +152,8 @@ roslaunch sanbot_ros bridge.launch
 | `sanbot/obstacle`   | subscribe     | Obstacle detection sensor                   | `std_msgs/Bool`       | true / false                             |
 | `sanbot/battery`    | subscribe     | Battery status                              | `sensor_msgs/BatteryState` | Percentage, status, etc.        |
 | `sanbot/info`       | subscribe     | System information                          | `sanbot_ros/Info`     | Structured robot information             |
-| `sanbot/camera`     | subscribe     | HD camera video stream                      | `sensor_msgs/Image`   | 1280x720 BGR8                            |
+| `sanbot/camera1`    | subscribe     | Primary HD camera stream            | `sensor_msgs/Image`   | 1280x720 BGR8                            |
+| `sanbot/camera2`    | subscribe     | Secondary HD camera stream           | `sensor_msgs/Image`   | 1280x720 BGR8                            |
 | `sanbot/gyro`       | subscribe     | Robot orientation                           | `sensor_msgs/Imu`     | Quaternion                               |
 | `sanbot/speech`     | subscribe     | Speech recognition result                   | `std_msgs/String`     | `'Hello Sanbot'`                           |
 | `ros/light`         | publish       | White forehead LED control                  | `std_msgs/UInt8`      | `data: 2`                                |
@@ -233,10 +234,16 @@ Provides system information about the robot in a structured format.
   device_model: "0.1.118"
   ```
 
-##### `sanbot/camera`
-HD camera video stream.
+##### `sanbot/camera1`
+Primary HD camera stream.
 - **Type**: `sensor_msgs/Image`
-- **Alternative**: MJPEG stream at `http://<robot_ip>:8080`
+- **Alternative**: MJPEG stream at `http://<robot_ip>:8080/camera1`
+- **Resolution**: 1280x720 pixels
+
+##### `sanbot/camera2`
+Secondary HD camera stream.
+- **Type**: `sensor_msgs/Image`
+- **Alternative**: MJPEG stream at `http://<robot_ip>:8080/camera2`
 - **Resolution**: 1280x720 pixels
 
 ##### `sanbot/gyro`
