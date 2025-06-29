@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dialog_divide_color">#ffd2d2d2</color>
+    <color name="dialog_text_color">#ff666666</color>
+    <color name="dialog_title_text_color">#666666</color>
+    <color name="top_bar_bg">#61a4d8</color>
+    <declare-styleable name="HotSeatView"><attr format="reference" name="normal_icon"/><attr format="reference" name="select_icon"/><attr format="color" name="normal_color"/><attr format="color" name="select_color"/><attr format="string" name="seat_name"/></declare-styleable>
+    <declare-styleable name="MyNumberPicker"><attr format="reference" name="numTextColor"/></declare-styleable>
+    <dimen name="home_top_bottom_space">8dp</dimen>
+    <dimen name="home_top_height">40px</dimen>
+    <dimen name="home_top_left_space">90px</dimen>
+    <dimen name="home_top_right_space">90px</dimen>
+    <dimen name="home_top_title_size">28sp</dimen>
+    <dimen name="home_top_top_space">8dp</dimen>
+    <dimen name="top_back_btn_height">45dp</dimen>
+    <dimen name="top_back_btn_width">70dp</dimen>
+    <dimen name="top_battery_font_size">18sp</dimen>
+    <dimen name="top_battery_height">27px</dimen>
+    <dimen name="top_battery_width">65px</dimen>
+    <dimen name="top_oper_btn_height">30dp</dimen>
+    <dimen name="top_oper_btn_width">30dp</dimen>
+    <dimen name="top_time_size">18sp</dimen>
+    <dimen name="top_title_margin_bottom">10dp</dimen>
+    <dimen name="top_wifi_height">35px</dimen>
+    <dimen name="top_wifi_width">35px</dimen>
+    <dimen name="top_zigbee_num_size">20px</dimen>
+    <dimen name="top_zigbee_num_text_size">15sp</dimen>
+    <dimen name="top_zigbee_size">18sp</dimen>
+    <dimen name="zigbee_height">25dp</dimen>
+    <string name="connection_timeout">The main service connection timeout</string>
+    <string name="dialog_button_cancel">Cancel</string>
+    <string name="dialog_button_confir">Confirm</string>
+    <string name="dialog_button_save">Save</string>
+    <string name="fail_client_not_exist">发送消息失败，远程端不存在或未启动</string>
+    <string name="fail_forbid_in_service">This method is forbidden to call in the service</string>
+    <string name="fail_no_charge_pile">Have not found the charging pile,please confirm if the charging pile is plugged in or added to the "My Device".</string>
+    <string name="fail_not_connect_mainservice">It failed to connect with the master control</string>
+    <string name="fail_param_invalid">The transitive parameter is wrong </string>
+    <string name="fail_remote_error">Remote master control is wrong</string>
+    <string name="home_top_zigbee_text">ZIGBEE</string>
+    <string name="logo_text1">Sanbot</string>
+    <string name="logo_text2">Once you have a sustainable inheritance</string>
+    <string name="success_cmd_operation">The command executes successfully</string>
+    <string name="top_battery_error">error</string>
+    <string name="top_time_is_am">AM</string>
+    <string name="top_time_is_pm">PM</string>
+    <style name="ActivityTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <!--app的背景-->
+        <item name="android:windowBackground">@drawable/home_page_bg</item>
+        <!--小圆点的样式-->
+    </style>
+</resources>

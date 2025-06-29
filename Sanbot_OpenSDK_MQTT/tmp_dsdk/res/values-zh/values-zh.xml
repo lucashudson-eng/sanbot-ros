@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connection_timeout">主服务连接超时</string>
+    <string name="dialog_button_cancel">取消</string>
+    <string name="dialog_button_confir">确定</string>
+    <string name="dialog_button_save">保存</string>
+    <string name="fail_client_not_exist">发送消息失败，远程端不存在或未启动</string>
+    <string name="fail_forbid_in_service">该方法禁止在Service中调用</string>
+    <string name="fail_no_charge_pile">没有找到充电桩，请确认充电桩是否插电或者已加入到智能圈中。</string>
+    <string name="fail_not_connect_mainservice">尚未与主控建立连接</string>
+    <string name="fail_param_invalid">传递的参数不正确</string>
+    <string name="fail_remote_error">远程主控端发生错误</string>
+    <string name="home_top_zigbee_text">ZIGBEE</string>
+    <string name="logo_text1">Sanbot</string>
+    <string name="logo_text2">一旦拥有 永续传承</string>
+    <string name="success_cmd_operation">指令执行成功</string>
+    <string name="top_battery_error">错误</string>
+    <string name="top_time_is_am">上午</string>
+    <string name="top_time_is_pm">下午</string>
+</resources>

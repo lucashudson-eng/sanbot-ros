@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/home_top_height"
+    android:paddingTop="5px">
+
+    <com.sanbot.opensdk.custom.WifiView
+        android:layout_gravity="start|top"
+        android:id="@+id/home_wifi"
+        android:layout_width="@dimen/top_wifi_width"
+        android:layout_height="@dimen/top_wifi_height"
+        android:layout_marginLeft="50dp"
+        android:layout_marginStart="50dp"/>
+
+    <View
+        android:layout_height="1dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"/>
+
+    <com.sanbot.opensdk.custom.TimeView
+        android:layout_gravity="center_horizontal|top"
+        android:id="@+id/time"
+        android:gravity="top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#ffffffff"
+        android:textSize="@dimen/top_time_size" />
+
+    <TextView
+        android:gravity="top"
+        android:layout_gravity="end|top"
+        android:id="@+id/battery_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="165px"
+        android:layout_marginEnd="165px"
+        android:textColor="#ffffffff"
+        android:textSize="@dimen/top_time_size" />
+
+    <com.sanbot.opensdk.custom.Battery
+        android:layout_marginTop="8px"
+        android:layout_gravity="end|top"
+        android:id="@+id/battery"
+        android:layout_width="@dimen/top_battery_width"
+        android:layout_height="@dimen/top_battery_height"
+        android:layout_marginEnd="@dimen/home_top_right_space"
+        android:layout_marginRight="@dimen/home_top_right_space" />
+
+    <TextView
+        android:layout_gravity="end"
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/top_title_margin_bottom"
+        android:textColor="#ffffffff"
+        android:textSize="@dimen/home_top_title_size" />
+
+    <ImageView
+        android:layout_gravity="end"
+        android:id="@+id/back_btn"
+        android:layout_width="@dimen/top_back_btn_width"
+        android:layout_height="@dimen/top_back_btn_height"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/go_back"
+        android:visibility="gone" />
+
+    <ImageView
+        android:layout_gravity="end"
+        android:id="@+id/more_option_btn"
+        android:layout_width="@dimen/top_oper_btn_width"
+        android:layout_height="@dimen/top_oper_btn_height"
+        android:layout_marginBottom="1dp"
+        android:layout_marginRight="@dimen/home_top_right_space"
+        android:layout_marginEnd="@dimen/home_top_right_space"
+        android:scaleType="centerInside"
+        android:src="@drawable/more_option"
+        android:visibility="gone" />
+</FrameLayout>
