@@ -1,0 +1,13 @@
+# Exclude version-control, editor and other unnecessary files
+git
+.git
+.gitignore
+.vscode
+.idea
+__pycache__
+*.pyc
+*~
+.DS_Store
+# Exclude parent repo folders when building from project root
+Sanbot_OpenSDK*
+sanbot_ros/ 

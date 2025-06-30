@@ -168,6 +168,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   scripts/ros2mqtt.py
   scripts/mqtt2ros.py
+  scripts/rtmp2ros.py
   scripts/gamer_teleop.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

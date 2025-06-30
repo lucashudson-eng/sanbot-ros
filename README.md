@@ -12,6 +12,7 @@ A ROS driver for interacting with Sanbot NANO robots via MQTT and ROS topics.
   - [Running](#running)
   - [Available Topics](#white_check_mark-available-topics)
   - [Detailed Topic Descriptions](#-detailed-topic-descriptions)
+- [Docker Setup](#docker-setup)
 
 ## 📦 Custom Message Types
 
@@ -24,12 +25,6 @@ This package includes custom ROS message types for structured communication:
 
 ### Optional Fields
 Fields marked as "optional" use `0` to indicate "not specified". When publishing via MQTT, fields with value `0` are automatically excluded from the JSON payload for cleaner communication.
-
-**Benefits:**
-- ✅ **Type Safety**: Structured messages prevent formatting errors
-- ✅ **Better Integration**: Native ROS message support
-- ✅ **Cleaner MQTT**: Optional fields automatically excluded
-- ✅ **IDE Support**: Autocomplete and validation in ROS development tools
 
 ## :iphone: Android Apps
 
@@ -68,7 +63,7 @@ There are two ways to connect to the Sanbot:
 #### Installing the App
 ```bash
 # Install APK
-adb install ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk
+adb install -r ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk
 
 # If needed, uninstall previous version
 adb uninstall com.grin.sanbotmqtt
@@ -115,9 +110,14 @@ source ~/catkin_ws/devel/setup.bash
 
 ### Running
 
-1. Start MQTT broker:
+1. Start MQTT and RTMP servers (recommended):
+
+Follow the instructions in the [Docker Setup](#docker-setup) section to build and run the container that bundles both services.
+
 ```bash
-mosquitto -p 1883 -d
+cd docker_mqtt_rtmp
+docker build -t sanbot_mqtt_rtmp .
+docker run -d --name sanbot_mqtt_rtmp -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
 ```
 
 2. Configure network:
@@ -125,21 +125,25 @@ mosquitto -p 1883 -d
    - Get computer's IP: `ifconfig`
    - Set computer's IP in robot's app
 
-3. Launch ROS-MQTT bridge:
+3. Launch ROS-MQTT-RTMP bridge:
 ```bash
 roslaunch sanbot_ros bridge.launch
 ```
 
-4. Control options:
-   - Custom gamepad control:
-     ```bash
-     rosrun sanbot_ros gamer_teleop.py
-     ```
-   - Standard ROS keyboard control:
-     ```bash
-     sudo apt install ros-noetic-teleop-twist-keyboard
-     rosrun teleop_twist_keyboard teleop_twist_keyboard.py
-     ```
+4. For testing if all connections were succesfull:
+    - Custom gamepad control:
+      ```bash
+      rosrun sanbot_ros gamer_teleop.py
+      ```
+    - Standard ROS keyboard control:
+      ```bash
+      sudo apt install ros-noetic-teleop-twist-keyboard
+      rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+      ```
+    - Rviz to see imagem:
+      ```bash
+      rviz
+      ```
 
 ### :white_check_mark: Available Topics
 
@@ -152,10 +156,9 @@ roslaunch sanbot_ros bridge.launch
 | `sanbot/obstacle`   | subscribe     | Obstacle detection sensor                   | `std_msgs/Bool`       | true / false                             |
 | `sanbot/battery`    | subscribe     | Battery status                              | `sensor_msgs/BatteryState` | Percentage, status, etc.        |
 | `sanbot/info`       | subscribe     | System information                          | `sanbot_ros/Info`     | Structured robot information             |
-| `sanbot/camera1`    | subscribe     | Primary HD camera stream            | `sensor_msgs/Image`   | 1280x720 BGR8                            |
-| `sanbot/camera2`    | subscribe     | Secondary HD camera stream           | `sensor_msgs/Image`   | 1280x720 BGR8                            |
 | `sanbot/gyro`       | subscribe     | Robot orientation                           | `sensor_msgs/Imu`     | Quaternion                               |
 | `sanbot/speech`     | subscribe     | Speech recognition result                   | `std_msgs/String`     | `'Hello Sanbot'`                           |
+| `/camera/image_raw` | subscribe     | RTMP camera stream                  | `sensor_msgs/Image`   | 1280x720 BGR8 30 fps                            |
 | `ros/light`         | publish       | White forehead LED control                  | `std_msgs/UInt8`      | `data: 2`                                |
 | `ros/move`          | publish       | Movement control (structured format)        | `sanbot_ros/Move`     | Direction, speed, distance, duration     |
 | `ros/cmd_vel`       | publish       | Standard ROS velocity control               | `geometry_msgs/Twist` | Linear and angular velocities            |
@@ -234,18 +237,6 @@ Provides system information about the robot in a structured format.
   device_model: "0.1.118"
   ```
 
-##### `sanbot/camera1`
-Primary HD camera stream.
-- **Type**: `sensor_msgs/Image`
-- **Alternative**: MJPEG stream at `http://<robot_ip>:8080/camera1`
-- **Resolution**: 1280x720 pixels
-
-##### `sanbot/camera2`
-Secondary HD camera stream.
-- **Type**: `sensor_msgs/Image`
-- **Alternative**: MJPEG stream at `http://<robot_ip>:8080/camera2`
-- **Resolution**: 1280x720 pixels
-
 ##### `sanbot/gyro`
 Robot orientation in 3D space.
 - **Type**: `sensor_msgs/Imu`
@@ -261,6 +252,13 @@ Speech recognition result is published as a simple string.
   ```bash
   data: 'Hello, how are you?'
   ```
+
+##### `/camera/image_raw`
+Camera stream decoded from an RTMP source.
+- **Type**: `sensor_msgs/Image`
+- **Source**: RTMP stream `rtmp://<robot_ip>:1935/live/stream`
+- **Resolution**: 1280x720 pixels
+- **FPS**: 30 frames per second
 
 #### Control Topics (Publish)
 
@@ -370,6 +368,80 @@ Triggers text-to-speech using a plain string.
   ```bash
   rostopic pub /ros/speak std_msgs/String "data: 'Hello, I am Sanbot!'"
   ```
+
+## 🐳 Docker Setup
+
+This repository provides a lightweight Docker image that starts both a **Mosquitto MQTT broker** (port **1883**) and an **NGINX RTMP server** (port **1935**) in a single container. This removes the need to install and configure these services manually on the host machine, which can be tricky.
+
+### Install Docker
+
+```bash
+# Install prerequisites
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+# Add Docker's official GPG key
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Set up the stable repository (replace "$(lsb_release -cs)" if needed)
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker Engine, CLI and Buildx/Compose plugins
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Start and enable the service
+sudo systemctl enable --now docker
+
+# (optional) run docker without sudo
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+This installs the latest stable Docker **Engine** directly from Docker's repository. For other distributions see the guide at <https://docs.docker.com/engine/install/>.
+
+### Build the image
+
+```bash
+cd docker_mqtt_rtmp
+docker build -t sanbot_mqtt_rtmp .
+```
+
+### Run the container
+
+```bash
+docker run -d --name sanbot_mqtt_rtmp -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
+```
+
+The container will stay in the foreground (managed by Docker) and expose both services:
+
+* **MQTT broker**: `mqtt://<host-ip>:1883`
+* **RTMP server**: `rtmp://<host-ip>:1935/live/stream`
+
+### Container management
+
+Stop the container:
+
+```bash
+docker stop sanbot_mqtt_rtmp
+```
+
+Remove the container:
+
+```bash
+docker rm sanbot_mqtt_rtmp
+```
+
+Check logs:
+
+```bash
+docker logs -f sanbot_mqtt_rtmp
+```
+
+With the container running, you can proceed to launch the ROS–MQTT bridge as described in the [Running](#running) section.
 
 ## :handshake: Contributing
 

@@ -10,7 +10,7 @@
         android:layout_marginTop="0dp"
         android:hint="Digite o IP do broker"
         android:inputType="textUri"
-        android:text="192.168.0.108" />
+        android:text="192.168.0.175" />
 
     <Button
         android:id="@+id/buttonConnect"
@@ -33,18 +33,41 @@
         android:text="Limpar Logs"
         android:layout_marginTop="8dp" />
 
-    <ScrollView
-        android:id="@+id/scrollView"
+    <Switch
+        android:id="@+id/switchRtmp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="RTMP ON/OFF"/>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:orientation="horizontal"
         android:layout_marginTop="12dp">
 
-        <TextView
-            android:id="@+id/textViewMessages"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textIsSelectable="true" />
-    </ScrollView>
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:id="@+id/textViewMessages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textIsSelectable="true" />
+        </ScrollView>
+
+        <SurfaceView
+            android:id="@+id/surfaceViewPreview"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -1,4 +1,5 @@
 <launch>
   <node pkg="sanbot_ros" type="ros2mqtt.py" name="ros2mqtt" output="screen"/>
   <node pkg="sanbot_ros" type="mqtt2ros.py" name="mqtt2ros" output="screen"/>
+  <node pkg="sanbot_ros" type="rtmp2ros.py" name="rtmp2ros" output="screen"/>
 </launch>

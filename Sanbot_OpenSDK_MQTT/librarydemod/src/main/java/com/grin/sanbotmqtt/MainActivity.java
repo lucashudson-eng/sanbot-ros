@@ -18,14 +18,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import android.media.MediaPlayer;
 
 import com.sanbot.opensdk.base.TopBaseActivity;
 import com.sanbot.opensdk.beans.FuncConstant;
 import com.sanbot.opensdk.function.beans.SpeakOption;
 import com.sanbot.opensdk.function.beans.wheelmotion.NoAngleWheelMotion;
 import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
-import com.sanbot.opensdk.function.unit.BaseManager;
 import com.sanbot.opensdk.function.unit.HardWareManager;
 import com.sanbot.opensdk.function.unit.SpeechManager;
 import com.sanbot.opensdk.function.unit.SystemManager;
@@ -38,34 +36,29 @@ import com.sanbot.opensdk.function.unit.interfaces.hardware.PIRListener;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.InfrareListener;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.VoiceLocateListener;
 import com.sanbot.opensdk.function.beans.LED;
-import com.sanbot.opensdk.function.unit.HDCameraManager;
-import com.sanbot.opensdk.beans.OperationResult;
-import com.sanbot.opensdk.function.beans.StreamOption;
+
 import com.sanbot.opensdk.function.unit.interfaces.hardware.ObstacleListener;
 import com.sanbot.opensdk.function.unit.interfaces.hardware.GyroscopeListener;
 
-import android.graphics.Bitmap;
-import android.graphics.ImageFormat;
-import android.graphics.YuvImage;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
 import android.speech.tts.TextToSpeech;
 import java.util.Locale;
 import com.sanbot.opensdk.function.beans.speech.Grammar;
 import com.sanbot.opensdk.function.beans.speech.RecognizeTextBean;
 import com.sanbot.opensdk.function.unit.interfaces.speech.RecognizeListener;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import com.pedro.common.ConnectChecker;
+import com.pedro.library.generic.GenericStream;
+import com.pedro.encoder.input.sources.audio.MicrophoneSource;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
 
-public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener {
+public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener, ConnectChecker {
 
     private EditText editTextIp;
     private Button buttonConnect;
@@ -73,6 +66,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private Spinner spinnerTopics;
     private TextView textViewMessages;
     private ScrollView scrollView;
+    private Switch switchRtmp;
+    private SurfaceView surfaceViewPreview;
 
     private MqttHandler mqttHandler;
     private boolean connected = false;
@@ -96,12 +91,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private final Map<Integer, Long> lastIRUpdate = new HashMap<>();
     private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
 
-    private HDCameraManager hdCameraManager;
-    private MultiCameraMjpegServer multiCameraMjpegServer;
-    private AndroidCameraManager androidCameraManager;
-    private int videoHandle = -1;
-
     private TextToSpeech tts;
+
+    // === RTMP Streaming ===
+    private GenericStream rtmpStream;
+    private static final int STREAM_WIDTH = 1280;
+    private static final int STREAM_HEIGHT = 720;
+    private static final int VIDEO_BITRATE = 1500 * 1000; // 1.5 Mbps
+    private static final int STREAM_ROTATION = 0; // 0, 90, 180 ou 270. Outros valores causarão falha no prepareVideo
+    private static final int SAMPLE_RATE = 32000;
+    private static final boolean IS_STEREO = true;
+    private static final int AUDIO_BITRATE = 128 * 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +123,9 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         spinnerTopics = findViewById(R.id.spinnerTopics);
         textViewMessages = findViewById(R.id.textViewMessages);
         scrollView = findViewById(R.id.scrollView);
+        surfaceViewPreview = findViewById(R.id.surfaceViewPreview);
+        surfaceViewPreview.setVisibility(View.GONE);
+        switchRtmp = findViewById(R.id.switchRtmp);
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String lastIp = prefs.getString(KEY_LAST_IP, null);
@@ -182,6 +185,24 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         
         // Verifica e solicita permissões de câmera
         checkCameraPermissions();
+
+        switchRtmp.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Start streaming if permissions are granted, otherwise request
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    checkCameraPermissions();
+                } else {
+                    if (rtmpStream == null || !rtmpStream.isStreaming()) {
+                        initRtmpStream();
+                        surfaceViewPreview.setVisibility(View.VISIBLE);
+                    }
+                }
+            } else {
+                stopRtmpStream();
+                surfaceViewPreview.setVisibility(View.GONE);
+            }
+        });
     }
 
     @Override
@@ -299,83 +320,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         });
 
-        // Inicializa o Multi-Camera MJPEG Server
-        multiCameraMjpegServer = new MultiCameraMjpegServer(8080);
-        try {
-            multiCameraMjpegServer.start();
-            appendMessage("🌐 Multi-Camera MJPEG disponível em:");
-            appendMessage("📷 Câmera 1 (SDK): http://" + getLocalIpAddress() + ":8080/camera1");
-            appendMessage("📱 Câmera 2 (Android): http://" + getLocalIpAddress() + ":8080/camera2");
-            appendMessage("🏠 Página principal: http://" + getLocalIpAddress() + ":8080");
-        } catch (IOException e) {
-            e.printStackTrace();
-            appendMessage("❌ Erro ao iniciar o Multi-Camera MJPEG server.");
-        }
-
-        // Inicia o stream de vídeo
-        hdCameraManager = (HDCameraManager) getUnitManager(FuncConstant.HDCAMERA_MANAGER);
-
-        StreamOption streamOption = new StreamOption();
-        streamOption.setChannel(StreamOption.SUB_STREAM);
-        streamOption.setDecodType(StreamOption.SOFTWARE_DECODE_NV21);  // Use NV21 para gerar JPEG
-        streamOption.setJustIframe(false);
-
-        hdCameraManager.setMediaListener(new com.sanbot.opensdk.function.unit.interfaces.media.MediaStreamListener() {
-            private long lastFrameTime = 0;
-
-            @Override
-            public void getVideoStream(int handle, byte[] bytes, int width, int height) {
-                long now = System.currentTimeMillis();
-                if (now - lastFrameTime < 100) return; // Máximo de 20 fps
-                lastFrameTime = now;
-
-                Bitmap bitmap = nv21ToBitmap(bytes, width, height);
-                if (bitmap != null && multiCameraMjpegServer != null) {
-                    multiCameraMjpegServer.updateFrame("camera1", bitmap);
-                }
-            }
-            @Override
-            public void getAudioStream(int i, byte[] bytes) {
-                // Ignorado
-            }
-        });
-
-        OperationResult result = hdCameraManager.openStream(streamOption);
-        if (result != null) {
-            String rawResult = result.getResult();
-            try {
-                int handle = Integer.parseInt(rawResult);
-                if (handle != -1) {
-                    videoHandle = handle;
-                    appendMessage("🎥 Stream de vídeo iniciado.");
-                } else {
-                    appendMessage("❌ Falha ao iniciar stream de vídeo (handle -1).");
-                }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-                appendMessage("❌ Falha ao iniciar stream: retorno inválido: " + rawResult);
-            }
-        } else {
-            appendMessage("❌ Falha ao iniciar stream: OperationResult é nulo.");
-        }
-
-        // Inicializa a câmera Android (Camera2 API)
-        androidCameraManager = new AndroidCameraManager(this);
-        androidCameraManager.setOnFrameAvailableListener(new AndroidCameraManager.OnFrameAvailableListener() {
-            @Override
-            public void onFrameAvailable(Bitmap frame) {
-                if (frame != null && multiCameraMjpegServer != null) {
-                    multiCameraMjpegServer.updateFrame("camera2", frame);
-                }
-            }
-        });
-
-        if (androidCameraManager.startCamera()) {
-            appendMessage("📱 Câmera Android iniciada com sucesso.");
-        } else {
-            appendMessage("❌ Falha ao iniciar câmera Android. Verifique as permissões.");
-        }
-
         speechManager.setOnSpeechListener(new RecognizeListener() {
             @Override
             public boolean onRecognizeResult(@NonNull Grammar grammar) {
@@ -410,19 +354,6 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 Log.e("TTS", "Erro no reconhecimento: " + i + ", " + i1);
             }
         });
-    }
-
-    private Bitmap nv21ToBitmap(byte[] data, int width, int height) {
-        try {
-            YuvImage image = new YuvImage(data, ImageFormat.NV21, width, height, null);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            image.compressToJpeg(new Rect(0, 0, width, height), 80, baos);
-            byte[] jpegData = baos.toByteArray();
-            return BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     private String getLocalIpAddress() {
@@ -753,24 +684,35 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     @Override
     protected void onPause() {
         super.onPause();
-        if (videoHandle != -1) {
-            hdCameraManager.closeStream(videoHandle);
-            videoHandle = -1;
+        if (rtmpStream != null) {
+            if (rtmpStream.isStreaming()) {
+                rtmpStream.stopStream();
+            }
+            if (rtmpStream.isOnPreview()) {
+                rtmpStream.stopPreview();
+            }
+            if (switchRtmp != null) switchRtmp.setChecked(false);
         }
-        if (androidCameraManager != null) {
-            androidCameraManager.stopCamera();
-        }
-        if (multiCameraMjpegServer != null) {
-            multiCameraMjpegServer.stop();
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
         }
     }
 
     private void checkCameraPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, 
-                    new String[]{Manifest.permission.CAMERA}, 
-                    CAMERA_PERMISSION_REQUEST_CODE);
+        java.util.List<String> needed = new java.util.ArrayList<>();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            needed.add(Manifest.permission.CAMERA);
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            needed.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (!needed.isEmpty()) {
+            ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), CAMERA_PERMISSION_REQUEST_CODE);
+        } else {
+            if (switchRtmp != null && switchRtmp.isChecked()) {
+                initRtmpStream();
+            }
         }
     }
 
@@ -778,10 +720,15 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                appendMessage("✅ Permissão de câmera concedida.");
+            boolean cameraGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+            boolean audioGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+            if (cameraGranted && audioGranted) {
+                appendMessage("✅ Permissões de câmera e áudio concedidas.");
+                if (switchRtmp != null && switchRtmp.isChecked()) {
+                    initRtmpStream();
+                }
             } else {
-                appendMessage("❌ Permissão de câmera negada. A câmera Android não funcionará.");
+                appendMessage("❌ Permissões necessárias negadas. Streaming RTMP não funcionará.");
             }
         }
     }
@@ -790,14 +737,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     protected void onDestroy() {
         mqttHandler.disconnect();
         publishHandler.removeCallbacksAndMessages(null);
-        if (videoHandle != -1) {
-            hdCameraManager.closeStream(videoHandle);
-        }
-        if (androidCameraManager != null) {
-            androidCameraManager.stopCamera();
-        }
-        if (multiCameraMjpegServer != null) {
-            multiCameraMjpegServer.stop();
+        if (rtmpStream != null) {
+            rtmpStream.release();
         }
         if (tts != null) {
             tts.stop();
@@ -873,6 +814,97 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void initRtmpStream() {
+        rtmpStream = new GenericStream(this, this);
+        Log.d("RTMP", "Iniciando initRtmpStream: W=" + STREAM_WIDTH + " H=" + STREAM_HEIGHT + " bitrate=" + VIDEO_BITRATE + " rot=" + STREAM_ROTATION);
+        rtmpStream.changeAudioSource(new MicrophoneSource()); // ativa microfone
+        boolean prepared;
+        try {
+            prepared = rtmpStream.prepareVideo(STREAM_WIDTH, STREAM_HEIGHT, VIDEO_BITRATE, 30)
+                    && rtmpStream.prepareAudio(SAMPLE_RATE, IS_STEREO, AUDIO_BITRATE);
+            Log.d("RTMP", "prepareVideo retornou: " + prepared);
+        } catch (IllegalArgumentException e) {
+            Log.e("RTMP", "IllegalArgumentException em prepareVideo: " + e.getMessage());
+            prepared = false;
+        }
+        if (prepared) {
+            if (!rtmpStream.isOnPreview()) {
+                SurfaceHolder holder = surfaceViewPreview.getHolder();
+                if (holder != null && holder.getSurface() != null && holder.getSurface().isValid()) {
+                    rtmpStream.startPreview(surfaceViewPreview);
+                } else {
+                    holder.addCallback(new SurfaceHolder.Callback() {
+                        @Override
+                        public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                            try {
+                                rtmpStream.startPreview(surfaceViewPreview);
+                            } catch (IllegalArgumentException e) {
+                                Log.e("RTMP", "Erro ao iniciar preview: " + e.getMessage());
+                            }
+                            surfaceHolder.removeCallback(this);
+                        }
+
+                        @Override public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {}
+                        @Override public void surfaceDestroyed(SurfaceHolder surfaceHolder) {}
+                    });
+                }
+            }
+            String ip = editTextIp.getText().toString().trim();
+            String rtmpUrl = "rtmp://" + ip + ":1935/live/stream";
+            rtmpStream.startStream(rtmpUrl);
+            appendMessage("📡 RTMP streaming iniciado: " + rtmpUrl);
+        } else {
+            appendMessage("❌ Falha ao preparar RTMP streaming. Verifique os logs para detalhes.");
+        }
+    }
+
+    @Override
+    public void onConnectionStarted(String url) {
+        appendMessage("🔌 RTMP: Conexão iniciada para " + url);
+    }
+
+    @Override
+    public void onConnectionSuccess() {
+        appendMessage("✅ RTMP: Conectado com sucesso.");
+    }
+
+    @Override
+    public void onConnectionFailed(String reason) {
+        appendMessage("❌ RTMP: Falha na conexão: " + reason);
+    }
+
+    @Override
+    public void onNewBitrate(long bitrate) {
+        // Opcional: pode-se exibir o bitrate se desejado
+    }
+
+    @Override
+    public void onDisconnect() {
+        appendMessage("🔌 RTMP: Desconectado.");
+    }
+
+    @Override
+    public void onAuthError() {
+        appendMessage("❌ RTMP: Erro de autenticação.");
+    }
+
+    @Override
+    public void onAuthSuccess() {
+        appendMessage("✅ RTMP: Autenticação bem-sucedida.");
+    }
+
+    private void stopRtmpStream() {
+        if (rtmpStream != null) {
+            if (rtmpStream.isStreaming()) {
+                rtmpStream.stopStream();
+            }
+            if (rtmpStream.isOnPreview()) {
+                rtmpStream.stopPreview();
+            }
+            appendMessage("🛑 RTMP streaming parado pelo usuário.");
         }
     }
 

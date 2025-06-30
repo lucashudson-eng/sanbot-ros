@@ -3,16 +3,13 @@ import rospy
 import json
 import paho.mqtt.client as mqtt
 from std_msgs.msg import String, Int32, Bool, UInt8
-from sensor_msgs.msg import Image, Imu, BatteryState, Range
+from sensor_msgs.msg import Imu, BatteryState, Range
 from sanbot_ros.msg import Info, Move, Head, Led
-from cv_bridge import CvBridge
-import cv2
-import threading
 import math
 import tf.transformations
 
-MQTT_BROKER_IP = "localhost"
-MQTT_PORT = 1883
+DEFAULT_MQTT_BROKER_IP = "localhost"
+DEFAULT_MQTT_PORT = 1883
 
 topics = {
     "sanbot/touch": "sanbot/touch",
@@ -27,43 +24,6 @@ topics = {
 }
 
 ros_publishers = {}
-bridge = CvBridge()
-
-lock = threading.Lock()
-
-# Flag indicating if camera threads have been started
-video_started = False
-
-# Helper to start camera capture threads once the robot IP is known
-def start_camera_threads(robot_ip):
-    """Spawn capture threads for both camera streams if not already running."""
-    global video_started
-    with lock:
-        if video_started:
-            return
-
-        camera1_url = f"http://{robot_ip}:8080/camera1"
-        camera2_url = f"http://{robot_ip}:8080/camera2"
-
-        # Ensure publishers exist (created later in main as well, but this is idempotent)
-        if "/sanbot/camera1" not in ros_publishers:
-            ros_publishers["/sanbot/camera1"] = rospy.Publisher("/sanbot/camera1", Image, queue_size=1)
-        if "/sanbot/camera2" not in ros_publishers:
-            ros_publishers["/sanbot/camera2"] = rospy.Publisher("/sanbot/camera2", Image, queue_size=1)
-
-        threading.Thread(target=video_capture_loop, args=(camera1_url, ros_publishers["/sanbot/camera1"], "/sanbot/camera1"), daemon=True).start()
-        threading.Thread(target=video_capture_loop, args=(camera2_url, ros_publishers["/sanbot/camera2"], "/sanbot/camera2"), daemon=True).start()
-
-        video_started = True
-
-# -----------------------------------------------------------------------------
-# 📷 Video streaming configuration
-# -----------------------------------------------------------------------------
-# Two separate MJPEG streams são suportados (http://<ip>:8080/camera1 e
-# http://<ip>:8080/camera2). O IP é obtido automaticamente a partir da
-# mensagem recebida em "sanbot/info". Assim que o IP é conhecido, iniciamos
-# duas threads que capturam e publicam em /sanbot/camera1 e /sanbot/camera2.
-# -----------------------------------------------------------------------------
 
 def euler_to_quaternion(roll, pitch, yaw):
     """Convert Euler angles to quaternion."""
@@ -73,35 +33,6 @@ def euler_to_quaternion(roll, pitch, yaw):
     yaw = math.radians(yaw)
     
     return tf.transformations.quaternion_from_euler(roll, pitch, yaw)
-
-def video_capture_loop(stream_url, pub, topic_name):
-    """Continuously capture frames from *stream_url* and publish them on *pub*.
-
-    A short log message (throttled) is emitted to indicate successful
-    publishing; the *topic_name* is used here purely for readability.
-    """
-    cap = cv2.VideoCapture(stream_url)
-    if not cap.isOpened():
-        rospy.logerr(f"❌ Não foi possível abrir o stream em: {stream_url}")
-        return
-
-    rospy.loginfo(f"📡 Capturando vídeo de {stream_url} → {topic_name}")
-    rate = rospy.Rate(10)  # 10 Hz
-
-    while not rospy.is_shutdown():
-        ret, frame = cap.read()
-        if ret:
-            try:
-                ros_img = bridge.cv2_to_imgmsg(frame, encoding="bgr8")
-                pub.publish(ros_img)
-                rospy.loginfo_throttle(5, f"📤 Frame publicado em {topic_name}")
-            except Exception as e:
-                rospy.logerr(f"Erro ao converter/publicar frame do topic {topic_name}: {e}")
-        else:
-            rospy.logwarn_throttle(10, f"⚠️ Falha ao capturar frame do vídeo ({topic_name})")
-        rate.sleep()
-
-    cap.release()
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -142,9 +73,6 @@ def on_message(client, userdata, msg):
             info_msg.android_version = data["android_version"]
             info_msg.device_model = data["device_model"]
             ros_publishers[ros_topic].publish(info_msg)
-
-            # Once we know the robot's IP, start video capture threads
-            start_camera_threads(data["ip"])
             return
 
         elif msg.topic == "sanbot/ir":
@@ -259,14 +187,8 @@ def on_message(client, userdata, msg):
 
 if __name__ == "__main__":
     rospy.init_node("mqtt_to_ros")
-
-    # ------------------------------------------------------------------
-    # 🗞️ Camera publishers (threads will start after IP is received via
-    #     sanbot/info).  We prepare the publishers here so other nodes can
-    #     already subscribe.
-    # ------------------------------------------------------------------
-    ros_publishers["/sanbot/camera1"] = rospy.Publisher("/sanbot/camera1", Image, queue_size=1)
-    ros_publishers["/sanbot/camera2"] = rospy.Publisher("/sanbot/camera2", Image, queue_size=1)
+    MQTT_BROKER_IP = rospy.get_param("/mqtt_broker_ip", DEFAULT_MQTT_BROKER_IP)
+    MQTT_PORT = int(rospy.get_param("/mqtt_port", DEFAULT_MQTT_PORT))
 
     for mqtt_topic, ros_topic in topics.items():
         if mqtt_topic == "sanbot/gyro":

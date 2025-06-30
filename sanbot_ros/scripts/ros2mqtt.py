@@ -6,9 +6,9 @@ from geometry_msgs.msg import Twist
 from sanbot_ros.msg import Info, Move, Head, Led
 from std_msgs.msg import String, UInt8
 
-# MQTT Configuration
-MQTT_BROKER_IP = "localhost"
-MQTT_PORT = 1883
+# MQTT Configuration (overridable via ROS parameters "mqtt_broker_ip" e "mqtt_port")
+DEFAULT_MQTT_BROKER_IP = "localhost"
+DEFAULT_MQTT_PORT = 1883
 
 # MQTT topics that the Android app listens to
 TOPIC_MOVE = "ros/move"
@@ -108,6 +108,10 @@ def on_connect(client, userdata, flags, rc):
 
 if __name__ == "__main__":
     rospy.init_node("ros_to_mqtt")
+
+    # Read ROS parameters (global or private). Falls back to defaults if not provided.
+    MQTT_BROKER_IP = rospy.get_param("/mqtt_broker_ip", DEFAULT_MQTT_BROKER_IP)
+    MQTT_PORT = int(rospy.get_param("/mqtt_port", DEFAULT_MQTT_PORT))
 
     # MQTT Client
     mqtt_client = mqtt.Client()
