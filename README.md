@@ -110,7 +110,7 @@ source ~/catkin_ws/devel/setup.bash
 
 ### Running
 
-1. Start MQTT and RTMP servers (recommended):
+1. Start MQTT and RTMP servers:
 
 Follow the instructions in the [Docker Setup](#docker-setup) section to build and run the container that bundles both services.
 
@@ -119,6 +119,8 @@ cd docker_mqtt_rtmp
 docker build -t sanbot_mqtt_rtmp .
 docker run -d --name sanbot_mqtt_rtmp -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
 ```
+
+You can install and configure them manually, but that's more work. So I recommend just installing and running Docker.
 
 2. Configure network:
    - Connect robot to same network as computer
@@ -130,7 +132,10 @@ docker run -d --name sanbot_mqtt_rtmp -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
 roslaunch sanbot_ros bridge.launch
 ```
 
-4. For testing if all connections were succesfull:
+4. Testing Successful Connections:
+
+    To verify that all connections are working as expected, you can use the following methods:
+
     - Custom gamepad control:
       ```bash
       rosrun sanbot_ros gamer_teleop.py
@@ -140,7 +145,7 @@ roslaunch sanbot_ros bridge.launch
       sudo apt install ros-noetic-teleop-twist-keyboard
       rosrun teleop_twist_keyboard teleop_twist_keyboard.py
       ```
-    - Rviz to see imagem:
+    - To visualize images within the ROS environment, launch Rviz:
       ```bash
       rviz
       ```
