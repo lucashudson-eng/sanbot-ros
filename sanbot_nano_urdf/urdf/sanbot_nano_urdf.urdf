@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="sanbot_nano_urdf">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-1.6448E-05 5.9313E-06 0.072932"
+        rpy="0 0 0" />
+      <mass
+        value="12.916" />
+      <inertia
+        ixx="0.11282"
+        ixy="-2.4962E-05"
+        ixz="-3.2934E-05"
+        iyy="0.11397"
+        iyz="5.3088E-07"
+        izz="0.21391" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="wheel_1_link">
+    <inertial>
+      <origin
+        xyz="-1.9572E-08 1.6882E-07 0.017969"
+        rpy="0 0 0" />
+      <mass
+        value="0.31873" />
+      <inertia
+        ixx="9.2012E-05"
+        ixy="-3.9404E-16"
+        ixz="-1.2059E-20"
+        iyy="9.2012E-05"
+        iyz="4.0166E-21"
+        izz="0.0001705" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_1_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.10196 0.10196 0.10196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_1"
+    type="continuous">
+    <origin
+      xyz="0.1195 0 0.03"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_1_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="wheel_2_link">
+    <inertial>
+      <origin
+        xyz="-0.015561 -1.3641E-07 -0.0089842"
+        rpy="0 0 0" />
+      <mass
+        value="0.31873" />
+      <inertia
+        ixx="0.00015088"
+        ixy="-4.8632E-20"
+        ixz="3.3988E-05"
+        iyy="9.2012E-05"
+        iyz="7.2696E-20"
+        izz="0.00011164" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_2_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.10196 0.10196 0.10196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_2"
+    type="continuous">
+    <origin
+      xyz="-0.0597500000000005 -0.10349003575224 0.03"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_2_link" />
+    <axis
+      xyz="-0.866025403784436 0 -0.500000000000004" />
+  </joint>
+  <link
+    name="wheel_3_link">
+    <inertial>
+      <origin
+        xyz="0.015563 2.6296E-06 -0.0089815"
+        rpy="0 0 0" />
+      <mass
+        value="0.31873" />
+      <inertia
+        ixx="0.00015088"
+        ixy="-1.1229E-19"
+        ixz="-3.3988E-05"
+        iyy="9.2012E-05"
+        iyz="-1.8416E-19"
+        izz="0.00011164" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_3_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.10196 0.10196 0.10196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wheel_3_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_3"
+    type="continuous">
+    <origin
+      xyz="-0.0597527016785317 0.103488475937413 0.0299975068501592"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="wheel_3_link" />
+    <axis
+      xyz="0.866025403784443 0 -0.499999999999992" />
+  </joint>
+  <link
+    name=" body_link">
+    <inertial>
+      <origin
+        xyz="-5.1698E-07 0.19116 0.004721"
+        rpy="0 0 0" />
+      <mass
+        value="38.598" />
+      <inertia
+        ixx="0.7865"
+        ixy="3.4141E-06"
+        ixz="1.2839E-06"
+        iyy="0.64455"
+        iyz="-0.0005826"
+        izz="0.81776" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/ body_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/ body_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="body"
+    type="fixed">
+    <origin
+      xyz="0 0 0.14"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link=" body_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="wing_left_link">
+    <inertial>
+      <origin
+        xyz="-0.016061 -0.059841 -0.0091971"
+        rpy="0 0 0" />
+      <mass
+        value="0.32895" />
+      <inertia
+        ixx="0.001422"
+        ixy="-8.6472E-06"
+        ixz="-1.329E-06"
+        iyy="0.00040649"
+        iyz="-8.5333E-05"
+        izz="0.0010278" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wing_left_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wing_left_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wing_left"
+    type="revolute">
+    <origin
+      xyz="-0.171 0.338 -0.0087685"
+      rpy="0 0 0" />
+    <parent
+      link=" body_link" />
+    <child
+      link="wing_left_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.571"
+      upper="3.1416"
+      effort="10"
+      velocity="1" />
+  </joint>
+  <link
+    name="wing_right_link">
+    <inertial>
+      <origin
+        xyz="0.016061 -0.059841 -0.0091968"
+        rpy="0 0 0" />
+      <mass
+        value="0.32895" />
+      <inertia
+        ixx="0.001422"
+        ixy="8.6476E-06"
+        ixz="1.3291E-06"
+        iyy="0.00040649"
+        iyz="-8.5335E-05"
+        izz="0.0010278" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wing_right_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/wing_right_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wing_right"
+    type="revolute">
+    <origin
+      xyz="0.171 0.338 -0.0087685"
+      rpy="0 0 0" />
+    <parent
+      link=" body_link" />
+    <child
+      link="wing_right_link" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.571"
+      upper="3.1416"
+      effort="10"
+      velocity="1" />
+  </joint>
+  <link
+    name="neck_link">
+    <inertial>
+      <origin
+        xyz="3.8396E-18 0.022723 -4.6823E-21"
+        rpy="0 0 0" />
+      <mass
+        value="0.049981" />
+      <inertia
+        ixx="6.6702E-06"
+        ixy="-2.5246E-22"
+        ixz="-9.3443E-23"
+        iyy="4.2204E-05"
+        iyz="6.6423E-23"
+        izz="4.216E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/neck_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/neck_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="neck"
+    type="revolute">
+    <origin
+      xyz="0 0.3353 0"
+      rpy="0 0 0" />
+    <parent
+      link=" body_link" />
+    <child
+      link="neck_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.571"
+      upper="1.571"
+      effort="10"
+      velocity="1" />
+  </joint>
+  <link
+    name="head_link">
+    <inertial>
+      <origin
+        xyz="8.9709E-06 0.18154 -0.0030782"
+        rpy="0 0 0" />
+      <mass
+        value="15.642" />
+      <inertia
+        ixx="0.15887"
+        ixy="-1.5947E-07"
+        ixz="1.4425E-06"
+        iyy="0.15782"
+        iyz="0.013233"
+        izz="0.16373" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/head_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://sanbot_nano_urdf/meshes/head_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="head"
+    type="revolute">
+    <origin
+      xyz="0 0.02 0"
+      rpy="0 0 0" />
+    <parent
+      link="neck_link" />
+    <child
+      link="head_link" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="0"
+      upper="0.646"
+      effort="10"
+      velocity="1" />
+  </joint>
+</robot>
