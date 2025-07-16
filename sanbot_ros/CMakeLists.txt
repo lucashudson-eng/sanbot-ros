@@ -53,7 +53,6 @@ add_message_files(
   FILES
   Info.msg
   Move.msg
-  Head.msg
   Led.msg
 )
 

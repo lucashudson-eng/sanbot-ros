@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import rospy
 import json
+import math
 import paho.mqtt.client as mqtt
 from geometry_msgs.msg import Twist
-from sanbot_ros.msg import Info, Move, Head, Led
+from sanbot_ros.msg import Move, Led
+from trajectory_msgs.msg import JointTrajectory
 from std_msgs.msg import String, UInt8
 
 # MQTT Configuration (overridable via ROS parameters "mqtt_broker_ip" e "mqtt_port")
@@ -12,10 +14,10 @@ DEFAULT_MQTT_PORT = 1883
 
 # MQTT topics that the Android app listens to
 TOPIC_MOVE = "ros/move"
-TOPIC_HEAD = "ros/head"
 TOPIC_LIGHT = "ros/light"
 TOPIC_LED = "ros/led"
 TOPIC_SPEAK = "ros/speak"
+TOPIC_JOINTS = "ros/joints"
 
 def callback_cmd_vel(msg):
     x = msg.linear.x
@@ -67,18 +69,31 @@ def callback_move(msg):
     mqtt_client.publish(TOPIC_MOVE, json.dumps(data))
     rospy.loginfo(f"[MQTT] ros/move: {data}")
 
-def callback_head(msg):
-    data = {
-        "direction": msg.direction,
-        "angle": msg.angle
-    }
-    if msg.speed != 0:
-        data["speed"] = msg.speed
-    if msg.motor != 0:
-        data["motor"] = msg.motor
-
-    mqtt_client.publish(TOPIC_HEAD, json.dumps(data))
-    rospy.loginfo(f"[MQTT] ros/head: {data}")
+def callback_joints(msg):
+    # Extract joint names and positions from JointTrajectory
+    if len(msg.points) > 0 and len(msg.joint_names) > 0:
+        point = msg.points[0]
+        
+        # Process each joint separately
+        for i, joint_name in enumerate(msg.joint_names):
+            if joint_name in ["head_pan", "head_tilt", "wing_left", "wing_right"]:
+                # Create data for this specific joint
+                data = {
+                    "joint": joint_name,
+                }
+                # Add angle if position is available
+                if len(point.positions) > i:
+                    angle_deg = int(math.degrees(point.positions[i]))
+                    data["angle"] = angle_deg
+                # Add speed if velocity is available
+                if len(point.velocities) > i:
+                    speed_percent = int(point.velocities[i] * 100)
+                    data["speed"] = speed_percent
+                # Publish to MQTT for this joint
+                mqtt_client.publish(TOPIC_JOINTS, json.dumps(data))
+                rospy.loginfo(f"[MQTT] ros/joints ({joint_name}): {data}")
+    else:
+        rospy.logwarn("JointTrajectory message is empty or missing joint names")
 
 def callback_light(msg):
     data = {"white": msg.data}
@@ -122,7 +137,7 @@ if __name__ == "__main__":
     # ROS Subscriptions
     rospy.Subscriber("/ros/cmd_vel", Twist, callback_cmd_vel)
     rospy.Subscriber("/ros/move", Move, callback_move)
-    rospy.Subscriber("/ros/head", Head, callback_head)
+    rospy.Subscriber("/ros/joints", JointTrajectory, callback_joints)
     rospy.Subscriber("/ros/light", UInt8, callback_light)
     rospy.Subscriber("/ros/led", Led, callback_led)
     rospy.Subscriber("/ros/speak", String, callback_speak)

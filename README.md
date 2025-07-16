@@ -20,7 +20,7 @@ This package includes custom ROS message types for structured communication:
 
 - **`sanbot_ros/Info`**: System information (robot_id, ip, versions, device_model)
 - **`sanbot_ros/Move`**: Movement control (direction, speed, distance, duration)
-- **`sanbot_ros/Head`**: Head movement (direction, angle, speed, motor)
+
 - **`sanbot_ros/Led`**: LED control (part, mode, duration, random)
 
 ### Optional Fields
@@ -31,7 +31,7 @@ Fields marked as "optional" use `0` to indicate "not specified". When publishing
 Two Android applications are provided to interface with the Sanbot robot:
 
 1. **Sanbot_OpenSDK20191118**: Official example app from [Sanbot's Developer Center](http://blue.sanbotcloud.com:98/dev/docs/robot.html) showcasing all robot functionalities.
-2. **Sanbot_OpenSDK_MQTT**: Custom version adapted for MQTT communication, designed to work with this ROS package.
+2. **Sanbot_Ros_Bridge**: Custom version adapted for MQTT and RTMP communication, designed to be a bridge for this ROS package.
 
 ### :electric_plug: Connection Setup
 
@@ -63,10 +63,10 @@ There are two ways to connect to the Sanbot:
 #### Installing the App
 ```bash
 # Install APK
-adb install -r ~/catkin_ws/src/sanbot-ros/Sanbot_OpenSDK_MQTT/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk
+adb install -r ~/catkin_ws/src/sanbot-ros/Sanbot_Ros_Bridge/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk
 
 # If needed, uninstall previous version
-adb uninstall com.grin.sanbotmqtt
+adb uninstall com.grin.sanbotrosbridge
 ```
 
 #### Running the App
@@ -74,13 +74,13 @@ Two ways to launch the app:
 1. Find it in the App Store under "Come into life" section (some versions)
 2. Launch manually via ADB:
    ```bash
-   adb shell am start -n com.grin.sanbotmqtt/.MainActivity
+   adb shell am start -n com.grin.sanbotrosbridge/.MainActivity
    ```
 
 #### Useful ADB Commands
 ```bash
 # Force close the app
-adb shell am force-stop com.grin.sanbotmqtt
+adb shell am force-stop com.grin.sanbotrosbridge
 
 # View app logs
 adb logcat
@@ -167,7 +167,7 @@ roslaunch sanbot_ros bridge.launch
 | `ros/light`         | publish       | White forehead LED control                  | `std_msgs/UInt8`      | `data: 2`                                |
 | `ros/move`          | publish       | Movement control (structured format)        | `sanbot_ros/Move`     | Direction, speed, distance, duration     |
 | `ros/cmd_vel`       | publish       | Standard ROS velocity control               | `geometry_msgs/Twist` | Linear and angular velocities            |
-| `ros/head`          | publish       | Head movement (structured format)           | `sanbot_ros/Head`     | Direction, angle, speed, motor           |
+| `ros/joints`        | publish       | Joint control (head_pan, head_tilt, wing_left, wing_right) | `trajectory_msgs/JointTrajectory`     | Joint name, angle and velocity                    |
 | `ros/led`           | publish       | Color LED control (structured format)       | `sanbot_ros/Led`      | Part, mode, duration, random             |
 | `ros/speak`         | publish       | Text-to-speech                              | `std_msgs/String`     | `'Hello, I am Sanbot'`                   |
 
@@ -323,23 +323,33 @@ Standard ROS velocity control.
     z: 0.0"
   ```
 
-##### `ros/head`
-Controls head movement using structured message format.
-- **Type**: sanbot_ros/Head
+##### `ros/joints`
+Set a angle to any robot joints using trajectory message format with joint name, angle and velocity.
+
+- **Type**: trajectory_msgs/JointTrajectory
 - **Fields**:
-  - direction (string): "up", "down", "left", "right"
-  - angle (int16): Movement angle in degrees
-  - speed (int8): Speed percentage 1-100 (optional, 0 = not specified)
-  - motor (int8): Motor selection (optional, 0 = not specified)
-    - 1: neck
-    - 2: vertical
-    - 3: horizontal
+  - joint_names: List of joint names to control
+  - points: List of trajectory points containing:
+    - positions: Joint angles in radians
+    - velocities: Joint velocities (0.0 to 1.0, converted to 0-100%)
+- **Available Joints**:
+  - `head_pan`: Horizontal head rotation (left/right) - Range: -90° to +90° (-1.57 to +1.57 rad)
+  - `head_tilt`: Vertical head rotation (up/down) - Range: 0° to +37° (0 to +0.65 rad)
+  - `wing_left`: Left wing movement (not implemented, not found in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
+  - `wing_right`: Right wing movement (not implemented, not found  in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
 - **Example**: 
   ```bash
-  rostopic pub /ros/head sanbot_ros/Head "direction: 'up'
-  angle: 30
-  speed: 80
-  motor: 0"
+  # Rotate head left to 45 degrees (~0.79 radians)
+  rostopic pub /ros/joints trajectory_msgs/JointTrajectory "joint_names: ['head_pan']
+  points:
+  - positions: [-0.79]
+    velocities: [0.5]"
+  
+  # Tilt head up to 29 degrees (~0.52 radians)
+  rostopic pub /ros/joints trajectory_msgs/JointTrajectory "joint_names: ['head_tilt']
+  points:
+  - positions: [0.52]
+    velocities: [0.8]"
   ```
 
 ##### `ros/led`
@@ -364,10 +374,13 @@ Controls color LEDs using structured message format.
   ```
 
 ##### `ros/speak`
-Triggers text-to-speech using a plain string.
+Triggers text-to-speech using a plain string with TTS engine selection.
 - **Type**: std_msgs/String
 - **Format**: `'text'`
-- **Language**: English
+- **TTS Engine Options**: 
+  - SDK TTS: Uses Sanbot's built-in TTS engine
+  - Android TTS: Uses Android's system TTS with multiple language support
+- **Languages**: Multiple languages available through Android TTS (English, Portuguese, Spanish, etc.)
 - **Volume**: Fixed at system volume level
 - **Example**: 
   ```bash

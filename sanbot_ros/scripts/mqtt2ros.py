@@ -2,9 +2,9 @@
 import rospy
 import json
 import paho.mqtt.client as mqtt
-from std_msgs.msg import String, Int32, Bool, UInt8
+from std_msgs.msg import String, Int32, Bool
 from sensor_msgs.msg import Imu, BatteryState, Range
-from sanbot_ros.msg import Info, Move, Head, Led
+from sanbot_ros.msg import Info
 import math
 import tf.transformations
 
