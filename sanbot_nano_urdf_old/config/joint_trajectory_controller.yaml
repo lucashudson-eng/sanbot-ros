@@ -1,0 +1,19 @@
+head_controller:
+  type: "position_controllers/JointTrajectoryController"
+  joints:
+    - neck
+    - head
+
+wing_left_controller:
+  type: "position_controllers/JointTrajectoryController"
+  joints:
+    - wing_left
+
+wing_right_controller:
+  type: "position_controllers/JointTrajectoryController"
+  joints:
+    - wing_right
+
+joint_state_controller:
+  type: "joint_state_controller/JointStateController"
+  publish_rate: 50
