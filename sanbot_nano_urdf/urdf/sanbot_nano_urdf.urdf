@@ -11,7 +11,7 @@
         xyz="-1.6448E-05 5.9313E-06 0.072932"
         rpy="0 0 0" />
       <mass
-        value="12.916" />
+        value="6.0" />
       <inertia
         ixx="0.11282"
         ixy="-2.4962E-05"
@@ -51,7 +51,7 @@
         xyz="-1.9572E-08 1.6882E-07 0.017969"
         rpy="0 0 0" />
       <mass
-        value="0.31873" />
+        value="0.088" />
       <inertia
         ixx="9.2012E-05"
         ixy="-3.9404E-16"
@@ -104,7 +104,7 @@
         xyz="-0.015561 -1.3641E-07 -0.0089842"
         rpy="0 0 0" />
       <mass
-        value="0.31873" />
+        value="0.088" />
       <inertia
         ixx="0.00015088"
         ixy="-4.8632E-20"
@@ -157,7 +157,7 @@
         xyz="0.015563 2.6296E-06 -0.0089815"
         rpy="0 0 0" />
       <mass
-        value="0.31873" />
+        value="0.088" />
       <inertia
         ixx="0.00015088"
         ixy="-1.1229E-19"
@@ -210,7 +210,7 @@
         xyz="-5.1698E-07 0.19116 0.004721"
         rpy="0 0 0" />
       <mass
-        value="38.598" />
+        value="10.55" />
       <inertia
         ixx="0.7865"
         ixy="3.4141E-06"
@@ -263,7 +263,7 @@
         xyz="-0.016061 -0.059841 -0.0091971"
         rpy="0 0 0" />
       <mass
-        value="0.32895" />
+        value="0.091" />
       <inertia
         ixx="0.001422"
         ixy="-8.6472E-06"
@@ -321,7 +321,7 @@
         xyz="0.016061 -0.059841 -0.0091968"
         rpy="0 0 0" />
       <mass
-        value="0.32895" />
+        value="0.091" />
       <inertia
         ixx="0.001422"
         ixy="8.6476E-06"
@@ -379,7 +379,7 @@
         xyz="3.8396E-18 0.022723 -4.6823E-21"
         rpy="0 0 0" />
       <mass
-        value="0.049981" />
+        value="0.014" />
       <inertia
         ixx="6.6702E-06"
         ixy="-2.5246E-22"
@@ -437,7 +437,7 @@
         xyz="8.9709E-06 0.18154 -0.0030782"
         rpy="0 0 0" />
       <mass
-        value="15.642" />
+        value="2.0" />
       <inertia
         ixx="0.15887"
         ixy="-1.5947E-07"
@@ -488,4 +488,103 @@
       effort="10"
       velocity="1" />
   </joint>
+  <!-- <transmission name="wheel_1_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_1_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wheel_2_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_2_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wheel_3_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_3_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission> -->
+  <transmission name="wing_left_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wing_left">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wing_left_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wing_right_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wing_right">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wing_right_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="neck_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="neck">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="neck_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="head_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="head">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="head_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- <gazebo reference="wheel_1_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wheel_2_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wheel_3_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wing_left_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wing_right_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="neck_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="head_link">
+    <selfCollide>true</selfCollide>
+  </gazebo> -->
+
+  <gazebo>
+    <plugin name="control"
+      filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
 </robot>
