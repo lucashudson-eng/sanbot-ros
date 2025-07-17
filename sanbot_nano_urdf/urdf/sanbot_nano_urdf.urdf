@@ -8,16 +8,16 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="-1.64477253035522E-05 5.9312884606181E-06 0.0729321766717519"
+        xyz="-1.64477253035525E-05 5.93128846061809E-06 0.0729321766717519"
         rpy="0 0 0" />
       <mass
-        value="12.9158989489561" />
+        value="6.0" />
       <inertia
         ixx="0.11281645397611"
         ixy="-2.49617328764964E-05"
         ixz="-3.29336671339687E-05"
         iyy="0.11397342921281"
-        iyz="5.30882435321549E-07"
+        iyz="5.30882435321499E-07"
         izz="0.213909779379668" />
     </inertial>
     <visual>
@@ -51,13 +51,13 @@
         xyz="-1.9572E-08 1.6882E-07 0.017969"
         rpy="0 0 0" />
       <mass
-        value="0.31873" />
+        value="0.088" />
       <inertia
         ixx="9.2012E-05"
         ixy="-3.9404E-16"
-        ixz="-1.1959E-20"
+        ixz="-1.1978E-20"
         iyy="9.2012E-05"
-        iyz="4.0111E-21"
+        iyz="3.9878E-21"
         izz="0.0001705" />
     </inertial>
     <visual>
@@ -89,7 +89,7 @@
     type="continuous">
     <origin
       xyz="0.1195 0 0.03"
-      rpy="1.5708 0 1.5708" />
+      rpy="1.5707963267949 0 1.5707963267949" />
     <parent
       link="base_link" />
     <child
@@ -101,17 +101,17 @@
     name="wheel_2_link">
     <inertial>
       <origin
-        xyz="-0.0155613556791648 -1.36414627743137E-07 -0.00898423585151896"
+        xyz="-0.015561 -1.3641E-07 -0.0089842"
         rpy="0 0 0" />
       <mass
-        value="0.318731676051724" />
+        value="0.088" />
       <inertia
-        ixx="0.000150881393626606"
-        ixy="-4.81220593158849E-20"
-        ixz="3.39880992947803E-05"
-        iyy="9.20122787944416E-05"
-        iyz="7.2738954345463E-20"
-        izz="0.000111635317072437" />
+        ixx="0.00015088"
+        ixy="-4.7789E-20"
+        ixz="3.3988E-05"
+        iyy="9.2012E-05"
+        iyz="7.3309E-20"
+        izz="0.00011164" />
     </inertial>
     <visual>
       <origin
@@ -124,7 +124,7 @@
       <material
         name="">
         <color
-          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
+          rgba="0.10196 0.10196 0.10196 1" />
       </material>
     </visual>
     <collision>
@@ -141,29 +141,29 @@
     name="wheel_2"
     type="continuous">
     <origin
-      xyz="-0.05975 -0.10349 0.03"
-      rpy="1.5708 0 1.5708" />
+      xyz="-0.0597500000000005 -0.10349003575224 0.03"
+      rpy="1.5707963267949 0 1.5707963267949" />
     <parent
       link="base_link" />
     <child
       link="wheel_2_link" />
     <axis
-      xyz="-0.86603 0 -0.5" />
+      xyz="-0.866025403784436 0 -0.500000000000004" />
   </joint>
   <link
     name="wheel_3_link">
     <inertial>
       <origin
-        xyz="0.0155629154939929 2.62956446859045E-06 -0.00898153417298637"
+        xyz="0.0155629154939929 2.62956446862167E-06 -0.00898153417298639"
         rpy="0 0 0" />
       <mass
-        value="0.318731676051724" />
+        value="0.088" />
       <inertia
         ixx="0.000150881393626607"
-        ixy="-1.12443623748008E-19"
+        ixy="-1.12285516185789E-19"
         ixz="-3.39880992947797E-05"
         iyy="9.20122787944418E-05"
-        iyz="-1.84282605587014E-19"
+        iyz="-1.83871154673021E-19"
         izz="0.000111635317072436" />
     </inertial>
     <visual>
@@ -194,30 +194,30 @@
     name="wheel_3"
     type="continuous">
     <origin
-      xyz="-0.059753 0.10349 0.029998"
-      rpy="1.5708 0 1.5708" />
+      xyz="-0.0597527016785317 0.103488475937413 0.0299975068501592"
+      rpy="1.5707963267949 0 1.5707963267949" />
     <parent
       link="base_link" />
     <child
       link="wheel_3_link" />
     <axis
-      xyz="0.86603 0 -0.5" />
+      xyz="0.866025403784443 0 -0.499999999999992" />
   </joint>
   <link
     name=" body_link">
     <inertial>
       <origin
-        xyz="7.5821657898137E-06 0.187923033888507 0.00047673713129741"
+        xyz="-2.2526E-07 0.1776 0.0050552"
         rpy="0 0 0" />
       <mass
-        value="37.769228971116" />
+        value="10.55" />
       <inertia
-        ixx="0.759270181933302"
-        ixy="-5.92484661876993E-06"
-        ixz="2.49839659342806E-07"
-        iyy="0.622168661439397"
-        iyz="0.0320158424753172"
-        izz="0.784453124434141" />
+        ixx="0.66244"
+        ixy="1.4576E-06"
+        ixz="1.1382E-06"
+        iyy="0.58535"
+        iyz="-0.00067278"
+        izz="0.67845" />
     </inertial>
     <visual>
       <origin
@@ -263,10 +263,10 @@
         xyz="-0.0160606525902144 -0.0598406170368806 -0.00919707200658264"
         rpy="0 0 0" />
       <mass
-        value="0.328951203332961" />
+        value="0.091" />
       <inertia
         ixx="0.00142200116993639"
-        ixy="-8.64723104371909E-06"
+        ixy="-8.6472310437191E-06"
         ixz="-1.32901460486538E-06"
         iyy="0.000406493634908928"
         iyz="-8.53334155343087E-05"
@@ -321,7 +321,7 @@
         xyz="0.0160606529414991 -0.0598405732596894 -0.00919681533921747"
         rpy="0 0 0" />
       <mass
-        value="0.328951060786706" />
+        value="0.091" />
       <inertia
         ixx="0.00142201224183235"
         ixy="8.64758632358562E-06"
@@ -358,7 +358,7 @@
     name="wing_right"
     type="revolute">
     <origin
-      xyz="0.171 0.338 -0.0087685"
+      xyz="0.171 0.337999997444124 -0.00876845650366815"
       rpy="0 0 0" />
     <parent
       link=" body_link" />
@@ -376,17 +376,17 @@
     name="neck_link">
     <inertial>
       <origin
-        xyz="-0.00366319374296106 0.0167913597709003 2.99564466910598E-18"
+        xyz="5.40046921691459E-17 0.0159400806888449 -3.39883913058925E-19"
         rpy="0 0 0" />
       <mass
-        value="0.077278069019187" />
+        value="0.014" />
       <inertia
-        ixx="1.80765069210195E-05"
-        ixy="-4.65106610937673E-22"
-        ixz="-2.90539801128703E-21"
-        iyy="8.60362454625531E-05"
-        iyz="-3.34857161537838E-22"
-        izz="9.15677880195827E-05" />
+        ixx="1.96147757166449E-05"
+        ixy="6.10385489108013E-23"
+        ixz="-5.31525086252485E-21"
+        iyy="8.61933250952325E-05"
+        iyz="1.47721967065935E-22"
+        izz="9.31060568152081E-05" />
     </inertial>
     <visual>
       <origin
@@ -416,7 +416,7 @@
     name="neck"
     type="revolute">
     <origin
-      xyz="0 0.3344 0"
+      xyz="0 0.3444 0"
       rpy="0 0 0" />
     <parent
       link=" body_link" />
@@ -434,17 +434,17 @@
     name="head_link">
     <inertial>
       <origin
-        xyz="-0.00365422427131145 0.181550277076497 -0.00307847722307662"
+        xyz="8.96947165014105E-06 0.181550277076496 -0.00307847722307745"
         rpy="0 0 0" />
       <mass
-        value="15.6411788909065" />
+        value="2.0" />
       <inertia
-        ixx="0.158830287109258"
-        ixy="-1.6359491177653E-07"
-        ixz="1.44250529127581E-06"
-        iyy="0.157816658158948"
-        iyz="0.0132319198738727"
-        izz="0.163690241546174" />
+        ixx="0.158830287109255"
+        ixy="-1.63594912225034E-07"
+        ixz="1.44250529086153E-06"
+        iyy="0.157816658158946"
+        iyz="0.0132319198738736"
+        izz="0.163690241546172" />
     </inertial>
     <visual>
       <origin
@@ -488,4 +488,104 @@
       effort="10"
       velocity="1" />
   </joint>
+  
+  <!-- <transmission name="wheel_1_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_1_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wheel_2_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_2_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wheel_3_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wheel_3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wheel_3_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission> -->
+  <transmission name="wing_left_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wing_left">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wing_left_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="wing_right_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="wing_right">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="wing_right_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="neck_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="neck">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="neck_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="head_link_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="head">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="head_link_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <!-- <gazebo reference="wheel_1_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wheel_2_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wheel_3_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wing_left_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="wing_right_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="neck_link">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="head_link">
+    <selfCollide>true</selfCollide>
+  </gazebo> -->
+
+  <gazebo>
+    <plugin name="control"
+      filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
 </robot>
