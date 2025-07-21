@@ -1,20 +1,39 @@
 <launch>
-  <include
-    file="$(find gazebo_ros)/launch/empty_world.launch" />
-  <node
-    name="tf_footprint_base"
-    pkg="tf"
-    type="static_transform_publisher"
-    args="0 0 0 0 0 0 base_link base_footprint 40" />
-  <node
-    name="spawn_model"
-    pkg="gazebo_ros"
-    type="spawn_model"
-    args="-file $(find sanbot_nano_urdf)/urdf/sanbot_nano_urdf.urdf -urdf -model sanbot_nano_urdf"
-    output="screen" />
-  <node
-    name="fake_joint_calibration"
-    pkg="rostopic"
-    type="rostopic"
-    args="pub /calibrated std_msgs/Bool true" />
+  <!-- Argumentos para posição inicial do robô -->
+  <arg name="arg_x" default="0.00" />
+  <arg name="arg_y" default="0.00" />
+  <arg name="arg_z" default="0.03" />
+  <arg name="arg_R" default="0.00" />
+  <arg name="arg_P" default="0.00" />
+  <arg name="arg_Y" default="0.00" />
+  
+  <!-- Carrega o URDF do robô -->
+  <param name="robot_description" textfile="$(find sanbot_nano_urdf)/urdf/sanbot_nano_urdf.urdf"/>
+
+  <!-- Carrega os parâmetros dos controladores -->
+  <rosparam file="$(find sanbot_nano_urdf)/config/joint_trajectory_controller.yaml" command="load"/>
+  
+  <!-- Spawna um mundo vazio do Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+  
+  <!-- Publicador de transformação estática -->
+  <node name="tf_footprint_base" pkg="tf" type="static_transform_publisher" 
+        args="0 0 0 0 0 0 base_link base_footprint 40" />
+  
+  <!-- Spawna o modelo do robô no Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+        args="-x $(arg arg_x) -y $(arg arg_y) -z $(arg arg_z) -Y $(arg arg_Y) 
+              -param robot_description -urdf -model sanbot_nano_urdf" />
+
+  <!-- Spawna (ativa) os controladores -->
+  <node name="controller_spawner"
+        pkg="controller_manager"
+        type="spawner"
+        respawn="false"
+        output="screen"
+        args="joint_state_controller head_controller wing_left_controller wing_right_controller"/>
+  
+  <!-- Publicador do estado do robô para TF -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn="false" output="screen"/>
 </launch>
