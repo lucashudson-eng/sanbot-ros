@@ -621,12 +621,24 @@
 
   <gazebo reference="wheel_back_link">
     <selfCollide>true</selfCollide>
+    <mu1>0.8</mu1>
+    <mu2>0.01</mu2>
+    <slip1>0.0</slip1>
+    <slip2>1.0</slip2>
   </gazebo>
   <gazebo reference="wheel_left_link">
     <selfCollide>true</selfCollide>
+    <mu1>0.8</mu1>
+    <mu2>0.01</mu2>
+    <slip1>0.0</slip1>
+    <slip2>1.0</slip2>
   </gazebo>
   <gazebo reference="wheel_right_link">
     <selfCollide>true</selfCollide>
+    <mu1>0.8</mu1>
+    <mu2>0.01</mu2>
+    <slip1>0.0</slip1>
+    <slip2>1.0</slip2>
   </gazebo>
   <gazebo reference="wing_left_link">
     <selfCollide>true</selfCollide>
