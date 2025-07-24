@@ -513,6 +513,7 @@
       xyz="0 0 0" />
   </joint>
 
+  <!--
   <transmission name="wheel_back_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="wheel_back">
@@ -542,7 +543,7 @@
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
-  </transmission>
+  </transmission>-->
   <transmission name="wing_left_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="wing_left">
@@ -586,36 +587,39 @@
 
   <gazebo reference="wheel_back_link">
     <selfCollide>true</selfCollide>
-    <mu1>0.8</mu1>
-    <mu2>0.01</mu2>
-    <slip1>0.0</slip1>
-    <slip2>1.0</slip2>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="wheel_left_link">
     <selfCollide>true</selfCollide>
-    <mu1>0.8</mu1>
-    <mu2>0.01</mu2>
-    <slip1>0.0</slip1>
-    <slip2>1.0</slip2>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="wheel_right_link">
     <selfCollide>true</selfCollide>
-    <mu1>0.8</mu1>
-    <mu2>0.01</mu2>
-    <slip1>0.0</slip1>
-    <slip2>1.0</slip2>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="wing_left_link">
     <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="wing_right_link">
     <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="neck_link">
     <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   <gazebo reference="head_link">
     <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
+  </gazebo>
+  <gazebo reference="base_link">
+    <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
+  </gazebo>
+  <gazebo reference="body_link">
+    <selfCollide>true</selfCollide>
+    <turnGravityOff>true</turnGravityOff>
   </gazebo>
   
   <gazebo reference="neck">
@@ -668,6 +672,16 @@
       <serviceName>imu_service</serviceName>
       <gaussianNoise>0.0</gaussianNoise>
       <updateRate>10.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>10.0</odometryRate>
+      <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>
 </robot>

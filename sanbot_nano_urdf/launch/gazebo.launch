@@ -5,15 +5,13 @@
   <arg name="arg_z" default="0.03" />
   <arg name="arg_R" default="0.00" />
   <arg name="arg_P" default="0.00" />
-  <arg name="arg_Y" default="3.14159" />
+  <arg name="arg_Y" default="0.00" />
   
   <!-- Carrega o URDF do robô -->
   <param name="robot_description" textfile="$(find sanbot_nano_urdf)/urdf/sanbot_nano_urdf.urdf"/>
 
   <!-- Carrega os parâmetros dos controladores -->
   <rosparam file="$(find sanbot_nano_urdf)/config/joint_trajectory_controller.yaml" command="load"/>
-  <!-- Carrega controladores de velocidade das rodas -->
-  <rosparam file="$(find sanbot_nano_urdf)/config/wheel_velocity_controllers.yaml" command="load"/>
   
   <!-- Spawna um mundo vazio do Gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch" />
@@ -33,11 +31,10 @@
         type="spawner"
         respawn="false"
         output="screen"
-        args="joint_state_controller head_controller wing_left_controller wing_right_controller wheel_back_velocity_controller wheel_left_velocity_controller wheel_right_velocity_controller"/>
-  
+        args="joint_state_controller head_controller wing_left_controller wing_right_controller"/>
+
   <!-- Publicador do estado do robô para TF -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="false" output="screen"/>
 
-  <node pkg="sanbot_nano_urdf" type="omni_inverse_kinematics.py" name="omni_inverse_kinematics" output="screen"/>
 </launch>
