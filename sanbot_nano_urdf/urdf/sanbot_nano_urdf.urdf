@@ -8,16 +8,16 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="-1.64477253035514E-05 5.93128846061808E-06 0.0729321766717519"
+        xyz="1.64477253035502E-05 -5.93128846061813E-06 0.0729321766717518"
         rpy="0 0 0" />
       <mass
         value="6.0" />
       <inertia
         ixx="0.11281645397611"
-        ixy="-2.49617328764964E-05"
-        ixz="-3.29336671339687E-05"
+        ixy="-2.49617328764965E-05"
+        ixz="3.29336671339688E-05"
         iyy="0.11397342921281"
-        iyz="5.30882435321518E-07"
+        iyz="-5.30882435321482E-07"
         izz="0.213909779379668" />
     </inertial>
     <visual>
@@ -26,8 +26,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/base.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/base_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -43,17 +48,17 @@
     name="wheel_back_link">
     <inertial>
       <origin
-        xyz="-1.9572E-08 1.6882E-07 0.017969"
+        xyz="-1.95717879520655E-08 1.68817821135508E-07 0.0179686472612415"
         rpy="0 0 0" />
       <mass
         value="0.088" />
       <inertia
-        ixx="9.2012E-05"
-        ixy="-3.9404E-16"
-        ixz="-1.2059E-20"
-        iyy="9.2012E-05"
-        iyz="4.0153E-21"
-        izz="0.0001705" />
+        ixx="9.20122787951246E-05"
+        ixy="-3.94042367835364E-16"
+        ixz="-1.19493108152976E-20"
+        iyy="9.20122787946692E-05"
+        iyz="3.93901867754232E-21"
+        izz="0.000170504431903692" />
     </inertial>
     <visual>
       <origin
@@ -66,7 +71,7 @@
       <material
         name="">
         <color
-          rgba="0.10196 0.10196 0.10196 1" />
+          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -83,8 +88,8 @@
     name="wheel_back"
     type="continuous">
     <origin
-      xyz="0.1195 0 0.03"
-      rpy="1.5707963267949 0 1.5707963267949" />
+      xyz="-0.1195 0 0.03"
+      rpy="1.5707963267949 0 -1.5707963267949" />
     <parent
       link="base_link" />
     <child
@@ -96,17 +101,17 @@
     name="wheel_left_link">
     <inertial>
       <origin
-        xyz="-0.015561 -1.3641E-07 -0.0089842"
+        xyz="-0.0155613556791648 -1.36414627760484E-07 -0.00898423585151892"
         rpy="0 0 0" />
       <mass
         value="0.088" />
       <inertia
-        ixx="0.00015088"
-        ixy="-4.841E-20"
-        ixz="3.3988E-05"
-        iyy="9.2012E-05"
-        iyz="7.37E-20"
-        izz="0.00011164" />
+        ixx="0.000150881393626606"
+        ixy="-4.80725859037333E-20"
+        ixz="3.39880992947803E-05"
+        iyy="9.20122787944416E-05"
+        iyz="7.32731581959123E-20"
+        izz="0.000111635317072437" />
     </inertial>
     <visual>
       <origin
@@ -119,7 +124,7 @@
       <material
         name="">
         <color
-          rgba="0.10196 0.10196 0.10196 1" />
+          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -136,8 +141,8 @@
     name="wheel_left"
     type="continuous">
     <origin
-      xyz="-0.0597500000000005 -0.10349003575224 0.03"
-      rpy="1.5707963267949 0 1.5707963267949" />
+      xyz="0.0597500000000005 0.10349003575224 0.03"
+      rpy="1.5707963267949 0 -1.5707963267949" />
     <parent
       link="base_link" />
     <child
@@ -149,17 +154,17 @@
     name="wheel_right_link">
     <inertial>
       <origin
-        xyz="0.015563 2.6296E-06 -0.0089815"
+        xyz="0.0155629154939929 2.62956446860085E-06 -0.00898153417298636"
         rpy="0 0 0" />
       <mass
         value="0.088" />
       <inertia
-        ixx="0.00015088"
-        ixy="-1.1253E-19"
-        ixz="-3.3988E-05"
-        iyy="9.2012E-05"
-        iyz="-1.8431E-19"
-        izz="0.00011164" />
+        ixx="0.000150881393626607"
+        ixy="-1.12621292193358E-19"
+        ixz="-3.39880992947797E-05"
+        iyy="9.20122787944418E-05"
+        iyz="-1.85546757553949E-19"
+        izz="0.000111635317072436" />
     </inertial>
     <visual>
       <origin
@@ -172,7 +177,7 @@
       <material
         name="">
         <color
-          rgba="0.10196 0.10196 0.10196 1" />
+          rgba="0.101960784313725 0.101960784313725 0.101960784313725 1" />
       </material>
     </visual>
     <collision>
@@ -189,8 +194,8 @@
     name="wheel_right"
     type="continuous">
     <origin
-      xyz="-0.0597527016785317 0.103488475937413 0.0299975068501592"
-      rpy="1.5707963267949 0 1.5707963267949" />
+      xyz="0.0597527016785317 -0.103488475937413 0.0299975068501592"
+      rpy="1.5707963267949 0 -1.5707963267949" />
     <parent
       link="base_link" />
     <child
@@ -199,20 +204,20 @@
       xyz="0.866025403784443 0 -0.499999999999992" />
   </joint>
   <link
-    name=" body_link">
+    name="body_link">
     <inertial>
       <origin
-        xyz="-6.5075E-07 0.17116 0.0053147"
+        xyz="-6.50746287136447E-07 0.171161303173797 0.00531466947071041"
         rpy="0 0 0" />
       <mass
         value="10.54" />
       <inertia
-        ixx="0.62632"
-        ixy="4.1388E-06"
-        ixz="1.1748E-07"
-        iyy="0.58352"
-        iyz="-0.00076156"
-        izz="0.65666" />
+        ixx="0.626323286825396"
+        ixy="4.13879140447484E-06"
+        ixz="1.17478367883931E-07"
+        iyy="0.583524845241408"
+        iyz="-0.000761556134756353"
+        izz="0.656661935026136" />
     </inertial>
     <visual>
       <origin
@@ -220,8 +225,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/body.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/body_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -238,11 +248,11 @@
     type="fixed">
     <origin
       xyz="0 0 0.14"
-      rpy="1.5707963267949 0 1.5707963267949" />
+      rpy="1.5707963267949 0 -1.5707963267949" />
     <parent
       link="base_link" />
     <child
-      link=" body_link" />
+      link="body_link" />
     <axis
       xyz="0 0 0" />
   </joint>
@@ -250,17 +260,17 @@
     name="wing_left_link">
     <inertial>
       <origin
-        xyz="-0.018053 -0.060356 -0.0092009"
+        xyz="-0.0180528514790016 -0.060356471352447 -0.00920090040634635"
         rpy="0 0 0" />
       <mass
         value="0.09" />
       <inertia
-        ixx="0.0014351"
-        ixy="-1.114E-05"
-        ixz="-1.7211E-06"
-        iyy="0.00041041"
-        iyz="-8.6947E-05"
-        izz="0.0010385" />
+        ixx="0.00143508347758134"
+        ixy="-1.11397432746257E-05"
+        ixz="-1.72108088017256E-06"
+        iyy="0.000410412505557005"
+        iyz="-8.69465392904125E-05"
+        izz="0.00103848643600513" />
     </inertial>
     <visual>
       <origin
@@ -268,8 +278,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/wing_left.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/wing_left_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -288,7 +303,7 @@
       xyz="-0.171 0.337999997444124 -0.00876845650366815"
       rpy="0 0 0" />
     <parent
-      link=" body_link" />
+      link="body_link" />
     <child
       link="wing_left_link" />
     <axis
@@ -303,17 +318,17 @@
     name="wing_right_link">
     <inertial>
       <origin
-        xyz="0.01806 -0.06039 -0.009202"
+        xyz="0.0180596331580364 -0.060389654065786 -0.00920199725760526"
         rpy="0 0 0" />
       <mass
         value="0.09" />
       <inertia
-        ixx="0.0014353"
-        ixy="1.1131E-05"
-        ixz="1.7199E-06"
-        iyy="0.00041054"
-        iyz="-8.6972E-05"
-        izz="0.0010386" />
+        ixx="0.00143527781768375"
+        ixy="1.11307475747432E-05"
+        ixz="1.71994140484216E-06"
+        iyy="0.000410538848951017"
+        iyz="-8.69715731520652E-05"
+        izz="0.00103855929783202" />
     </inertial>
     <visual>
       <origin
@@ -321,8 +336,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/wing_right.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/wing_right_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -341,7 +361,7 @@
       xyz="0.171 0.337999997444124 -0.00876845650366815"
       rpy="0 0 0" />
     <parent
-      link=" body_link" />
+      link="body_link" />
     <child
       link="wing_right_link" />
     <axis
@@ -356,17 +376,17 @@
     name="neck_link">
     <inertial>
       <origin
-        xyz="5.0796E-08 0.094182 -2.1544E-07"
+        xyz="5.07959831122588E-08 0.0941822883771556 -2.15444560226558E-07"
         rpy="0 0 0" />
       <mass
         value="0.014" />
       <inertia
-        ixx="0.00036602"
-        ixy="2.0634E-10"
-        ixz="2.6755E-10"
-        iyy="2.6339E-05"
-        iyz="1.4418E-09"
-        izz="0.00037609" />
+        ixx="0.00036601965027074"
+        ixy="2.06341914062177E-10"
+        ixz="2.67552661174392E-10"
+        iyy="2.63393480841545E-05"
+        iyz="1.44182677610015E-09"
+        izz="0.000376086984549767" />
     </inertial>
     <visual>
       <origin
@@ -374,8 +394,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/neck.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/neck_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -391,10 +416,10 @@
     name="neck"
     type="revolute">
     <origin
-      xyz="0 0.37832 0"
+      xyz="0 0.37832467677926 0"
       rpy="0 0 0" />
     <parent
-      link=" body_link" />
+      link="body_link" />
     <child
       link="neck_link" />
     <axis
@@ -412,17 +437,17 @@
     name="head_link">
     <inertial>
       <origin
-        xyz="-0.0029281 -8.7995E-06 -0.004676"
+        xyz="-0.0029281136953756 -8.79951278457592E-06 -0.0046759697686755"
         rpy="0 0 0" />
       <mass
         value="2.0" />
       <inertia
-        ixx="0.15722"
-        ixy="-9.0231E-08"
-        ixz="0.011877"
-        iyy="0.15278"
-        iyz="-2.9604E-06"
-        izz="0.15863" />
+        ixx="0.157224047016489"
+        ixy="-9.02313066752037E-08"
+        ixz="0.0118768228744953"
+        iyy="0.152781569466689"
+        iyz="-2.96042696367125E-06"
+        izz="0.158625545969497" />
     </inertial>
     <visual>
       <origin
@@ -430,8 +455,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/head.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/head_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -448,7 +478,7 @@
     type="revolute">
     <origin
       xyz="0 0.165 0"
-      rpy="0 0 1.5708" />
+      rpy="0 0 1.5707963267949" />
     <parent
       link="neck_link" />
     <child
@@ -468,17 +498,17 @@
     name="camera_chin_link">
     <inertial>
       <origin
-        xyz="3.4403E-17 1.1102E-16 0.001273"
+        xyz="3.44038304961544E-17 1.11022302462516E-16 0.0012729648678558"
         rpy="0 0 0" />
       <mass
         value="0.002" />
       <inertia
-        ixx="2.7589E-10"
-        ixy="-9.0714E-27"
-        ixz="-4.4884E-27"
-        iyy="3.4979E-10"
-        iyz="-1.3374E-26"
-        izz="5.6249E-10" />
+        ixx="2.75893420315291E-10"
+        ixy="-9.07141086890545E-27"
+        ixz="-2.91066093183747E-27"
+        iyy="3.49794254771563E-10"
+        iyz="-1.32958464693283E-26"
+        izz="5.62491899186398E-10" />
     </inertial>
     <visual>
       <origin
@@ -486,8 +516,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/textures/camera_chin.dae" scale="1 1 1" />
+          filename="package://sanbot_nano_urdf/meshes/camera_chin_link.STL" />
       </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.498039215686275 0.498039215686275 0.498039215686275 1" />
+      </material>
     </visual>
     <collision>
       <origin
@@ -503,8 +538,8 @@
     name="camera_chin"
     type="fixed">
     <origin
-      xyz="-0.08 0 -0.1355"
-      rpy="0 0 -1.5708" />
+      xyz="-0.0799999999999998 0 -0.1355"
+      rpy="0 0 -1.5707963267949" />
     <parent
       link="head_link" />
     <child
@@ -678,9 +713,9 @@
   <gazebo>
     <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
       <commandTopic>cmd_vel</commandTopic>
-      <odometryTopic>odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
-      <odometryRate>10.0</odometryRate>
+      <odometryTopic></odometryTopic>
+      <odometryFrame></odometryFrame>
+      <odometryRate>0.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>
