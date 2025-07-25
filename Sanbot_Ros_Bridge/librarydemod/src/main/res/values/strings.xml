@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <resources>
-    <string name="app_name">Sanbot MQTT</string>
+    <string name="app_name">Sanbot Ros Bridge</string>
 
     <string-array name="topics_array">
         <item>All</item>
@@ -11,7 +11,7 @@
         <item>sanbot/voice_angle</item>
         <item>sanbot/info</item>
         <item>sanbot/obstacle</item>
-        <item>sanbot/gyro</item>
+        <item>sanbot/imu</item>
         <item>sanbot/speech</item>
         <item>ros/light</item>
         <item>ros/move</item>

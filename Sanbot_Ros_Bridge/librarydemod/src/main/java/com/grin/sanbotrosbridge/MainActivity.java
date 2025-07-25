@@ -330,7 +330,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                             JSONObject touchJson = new JSONObject();
                             touchJson.put("part", part);
                             touchJson.put("description", getTouchPartName(part));
-                            mqttHandler.publishMessage("sanbot/touch", touchJson.toString());
+                            mqttHandler.publishMessage("/touch", touchJson.toString());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -346,7 +346,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                             JSONObject pirJson = new JSONObject();
                             pirJson.put("part", part == 1 ? "front" : "back");
                             pirJson.put("status", isChecked ? 1 : 0);
-                            mqttHandler.publishMessage("sanbot/pir", pirJson.toString());
+                            mqttHandler.publishMessage("/pir", pirJson.toString());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -367,7 +367,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                                 JSONObject irJson = new JSONObject();
                                 irJson.put("sensor", part);
                                 irJson.put("distance_cm", distance);
-                                mqttHandler.publishMessage("sanbot/ir", irJson.toString());
+                                mqttHandler.publishMessage("/ir", irJson.toString());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -382,7 +382,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 try {
                     JSONObject voiceJson = new JSONObject();
                     voiceJson.put("angle", angle);
-                    mqttHandler.publishMessage("sanbot/voice_angle", voiceJson.toString());
+                    mqttHandler.publishMessage("/voice_angle", voiceJson.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -395,7 +395,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 try{
                     JSONObject json = new JSONObject();
                     json.put("status", 1);
-                    mqttHandler.publishMessage("sanbot/obstacle", json.toString());
+                    mqttHandler.publishMessage("/obstacle", json.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -410,7 +410,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                     gyroJson.put("x", x);
                     gyroJson.put("y", y);
                     gyroJson.put("z", z);
-                    mqttHandler.publishMessage("sanbot/gyro", gyroJson.toString());
+                    mqttHandler.publishMessage("/imu", gyroJson.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -510,15 +510,15 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         });
 
-        if ("ros/light".equals(topic)) {
+        if ("/light".equals(topic)) {
             handleLightControl(message);
-        } else if ("ros/move".equals(topic)) {
+        } else if ("/move".equals(topic)) {
             handleMotionControl(message);
-        } else if ("ros/joints".equals(topic)) {
+        } else if ("/joints".equals(topic)) {
             handleJointMotion(message);
-        } else if ("ros/led".equals(topic)) {
+        } else if ("/led".equals(topic)) {
             handleLedControl(message);
-        } else if ("ros/speak".equals(topic)) {
+        } else if ("/speak".equals(topic)) {
             try {
                 JSONObject json = new JSONObject(message);
                 String texto = json.optString("msg", "");
@@ -871,7 +871,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("battery_level", batteryLevel);
                         json.put("battery_status", statusStr);
 
-                        mqttHandler.publishMessage("sanbot/battery", json.toString());
+                        mqttHandler.publishMessage("/battery", json.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -894,7 +894,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("android_version", android.os.Build.VERSION.RELEASE);
                         json.put("device_model", android.os.Build.MODEL);
 
-                        mqttHandler.publishMessage("sanbot/info", json.toString());
+                        mqttHandler.publishMessage("/info", json.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -910,7 +910,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             try {
                 JSONObject json = new JSONObject();
                 json.put("msg", texto);
-                mqttHandler.publishMessage("sanbot/speech", json.toString());
+                mqttHandler.publishMessage("/speech", json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }

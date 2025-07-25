@@ -13,11 +13,11 @@ DEFAULT_MQTT_BROKER_IP = "localhost"
 DEFAULT_MQTT_PORT = 1883
 
 # MQTT topics that the Android app listens to
-TOPIC_MOVE = "ros/move"
-TOPIC_LIGHT = "ros/light"
-TOPIC_LED = "ros/led"
-TOPIC_SPEAK = "ros/speak"
-TOPIC_JOINTS = "ros/joints"
+TOPIC_MOVE = "/move"
+TOPIC_LIGHT = "/light"
+TOPIC_LED = "/led"
+TOPIC_SPEAK = "/speak"
+TOPIC_JOINTS = "/joints"
 
 def callback_cmd_vel(msg):
     x = msg.linear.x
@@ -53,7 +53,7 @@ def callback_cmd_vel(msg):
     }
 
     mqtt_client.publish(TOPIC_MOVE, json.dumps(payload))
-    rospy.loginfo(f"[MQTT] ros/move (from /cmd_vel): {payload}")
+    rospy.loginfo(f"[MQTT] /move (from /cmd_vel): {payload}")
 
 def callback_move(msg):
     data = {
@@ -67,38 +67,41 @@ def callback_move(msg):
         data["duration"] = msg.duration
 
     mqtt_client.publish(TOPIC_MOVE, json.dumps(data))
-    rospy.loginfo(f"[MQTT] ros/move: {data}")
+    rospy.loginfo(f"[MQTT] /move: {data}")
 
 def callback_joints(msg):
+    #TODO: Add wing_left and wing_right
     # Extract joint names and positions from JointTrajectory
     if len(msg.points) > 0 and len(msg.joint_names) > 0:
-        point = msg.points[0]
-        
-        # Process each joint separately
+        # Use the last point of the trajectory (typically contains the goal)
+        point = msg.points[-1]
+
+        # Ignore messages whose goal time is zero (they represent the current state / "hold")
+        if point.time_from_start.to_sec() <= 0.0:
+            return
+
+        # Process head_pan and head_tilt joints
         for i, joint_name in enumerate(msg.joint_names):
-            if joint_name in ["head_pan", "head_tilt", "wing_left", "wing_right"]:
-                # Create data for this specific joint
+            if joint_name in ["head_pan", "head_tilt"]:
                 data = {
                     "joint": joint_name,
+                    "speed": 100  # Fixed 100 % as solicitado
                 }
-                # Add angle if position is available
+
+                # Position → angle em graus
                 if len(point.positions) > i:
                     angle_deg = int(math.degrees(point.positions[i]))
                     data["angle"] = angle_deg
-                # Add speed if velocity is available
-                if len(point.velocities) > i:
-                    speed_percent = int(point.velocities[i] * 100)
-                    data["speed"] = speed_percent
-                # Publish to MQTT for this joint
+
                 mqtt_client.publish(TOPIC_JOINTS, json.dumps(data))
-                rospy.loginfo(f"[MQTT] ros/joints ({joint_name}): {data}")
+                rospy.loginfo(f"[MQTT] /joints ({joint_name}): {data}")
     else:
         rospy.logwarn("JointTrajectory message is empty or missing joint names")
 
 def callback_light(msg):
     data = {"white": msg.data}
     mqtt_client.publish(TOPIC_LIGHT, json.dumps(data))
-    rospy.loginfo(f"[MQTT] ros/light: {data}")
+    rospy.loginfo(f"[MQTT] /light: {data}")
 
 def callback_led(msg):
     data = {
@@ -108,12 +111,12 @@ def callback_led(msg):
     }
 
     mqtt_client.publish(TOPIC_LED, json.dumps(data))
-    rospy.loginfo(f"[MQTT] ros/led: {data}")
+    rospy.loginfo(f"[MQTT] /led: {data}")
 
 def callback_speak(msg):
     data = {"msg": msg.data}
     mqtt_client.publish(TOPIC_SPEAK, json.dumps(data))
-    rospy.loginfo(f"[MQTT] ros/speak: {data}")
+    rospy.loginfo(f"[MQTT] /speak: {data}")
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -135,12 +138,12 @@ if __name__ == "__main__":
     mqtt_client.loop_start()
 
     # ROS Subscriptions
-    rospy.Subscriber("/ros/cmd_vel", Twist, callback_cmd_vel)
-    rospy.Subscriber("/ros/move", Move, callback_move)
-    rospy.Subscriber("/ros/joints", JointTrajectory, callback_joints)
-    rospy.Subscriber("/ros/light", UInt8, callback_light)
-    rospy.Subscriber("/ros/led", Led, callback_led)
-    rospy.Subscriber("/ros/speak", String, callback_speak)
+    rospy.Subscriber("/cmd_vel", Twist, callback_cmd_vel)
+    rospy.Subscriber("/move", Move, callback_move)
+    rospy.Subscriber("/head_controller/command", JointTrajectory, callback_joints)
+    rospy.Subscriber("/light", UInt8, callback_light)
+    rospy.Subscriber("/led", Led, callback_led)
+    rospy.Subscriber("/speak", String, callback_speak)
 
     rospy.loginfo("🔁 Sending ROS commands to Android app via MQTT...")
     rospy.spin()

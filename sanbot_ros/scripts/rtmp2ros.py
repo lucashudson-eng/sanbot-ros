@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     # Parâmetros
     rtmp_url_param: str = rospy.get_param("~rtmp_url", "rtmp://localhost/live/stream")
-    topic_param: str = rospy.get_param("~topic", "/camera/image_raw")
+    topic_param: str = rospy.get_param("~topic", "/camera_chin/image_raw")
     width_param: int = int(rospy.get_param("~width", 1280))
     height_param: int = int(rospy.get_param("~height", 720))
     show_image_param: bool = bool(rospy.get_param("~show_image", False))
