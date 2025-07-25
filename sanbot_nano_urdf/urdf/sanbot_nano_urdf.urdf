@@ -26,13 +26,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/base_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/base.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -225,13 +220,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/body_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/body.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -278,13 +268,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/wing_left_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/wing_left.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -336,13 +321,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/wing_right_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/wing_right.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -455,13 +435,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/head_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/head.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="1 1 1 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -516,13 +491,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/camera_chin_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/camera_chin.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.49804 0.49804 0.49804 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -569,13 +539,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/camera_forehead_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/camera_forehead.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.49804 0.49804 0.49804 1" />
-      </material>
     </visual>
     <collision>
       <origin
@@ -622,13 +587,8 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/camera_depth_link.STL" />
+          filename="package://sanbot_nano_urdf/textures/camera_depth.dae" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.49804 0.49804 0.49804 1" />
-      </material>
     </visual>
     <collision>
       <origin
