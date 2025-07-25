@@ -12,7 +12,7 @@
 
   <!-- Carrega os parâmetros dos controladores -->
   <rosparam file="$(find sanbot_nano_urdf)/config/joint_trajectory_controller.yaml" command="load"/>
-  
+
   <!-- Spawna um mundo vazio do Gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch" />
   
@@ -36,5 +36,4 @@
   <!-- Publicador do estado do robô para TF -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="false" output="screen"/>
-
 </launch>

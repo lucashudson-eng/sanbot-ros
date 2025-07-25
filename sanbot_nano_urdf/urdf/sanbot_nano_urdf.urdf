@@ -413,7 +413,7 @@
     </collision>
   </link>
   <joint
-    name="neck"
+    name="head_pan"
     type="revolute">
     <origin
       xyz="0 0.37832467677926 0"
@@ -474,7 +474,7 @@
     </collision>
   </link>
   <joint
-    name="head"
+    name="head_tilt"
     type="revolute">
     <origin
       xyz="0 0.165 0"
@@ -654,7 +654,7 @@
       xyz="0 0 0" />
   </joint>
 
-  <!-- <transmission name="wheel_back_link_trans">
+  <transmission name="wheel_back_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="wheel_back">
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
@@ -683,7 +683,7 @@
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
-  </transmission> -->
+  </transmission>
   <transmission name="wing_left_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="wing_left">
@@ -706,7 +706,7 @@
   </transmission>
   <transmission name="neck_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="neck">
+    <joint name="head_pan">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="neck_link_motor">
@@ -716,7 +716,7 @@
   </transmission>
   <transmission name="head_link_trans">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="head">
+    <joint name="head_tilt">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="head_link_motor">
@@ -762,24 +762,11 @@
     <turnGravityOff>true</turnGravityOff>
   </gazebo>
   
-  <gazebo reference="neck">
-    <provideFeedback>true</provideFeedback>
-    <implicitSpringDamper>1</implicitSpringDamper>
-    <implicitDampingFactor>0.1</implicitDampingFactor>
-  </gazebo>
-  
-  <gazebo reference="head">
-    <provideFeedback>true</provideFeedback>
-    <implicitSpringDamper>1</implicitSpringDamper>
-    <implicitDampingFactor>0.1</implicitDampingFactor>
-  </gazebo>
-  
   <gazebo reference="camera_chin_link">
     <sensor type="camera" name="camera_chin">
       <pose>0 0 0 -1.5708 1.5708 0</pose>
       <always_on>true</always_on>
       <update_rate>30</update_rate>
-      <visualize>true</visualize>
       <camera>
         <image>
           <width>1280</width>
@@ -789,18 +776,57 @@
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <robotNamespace>/</robotNamespace>
-        <cameraName>camera</cameraName>
+        <cameraName>camera_chin</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>camera_chin_link</frameName>
       </plugin>
     </sensor>
   </gazebo>
 
+  <gazebo reference="camera_forehead_link">
+    <sensor type="camera" name="camera_forehead">
+      <pose>0 0 0 -1.5708 -1.5708 0</pose>
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <camera>
+        <image>
+          <width>1280</width>
+          <height>720</height>
+          <format>R8G8B8</format>
+        </image>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <robotNamespace>/</robotNamespace>
+        <cameraName>camera_forehead</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <frameName>camera_forehead_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="camera_depth_link">
+    <sensor type="depth" name="camera_depth">
+      <pose>0 0 0 -1.5708 -1.5708 0</pose>
+      <always_on>true</always_on>
+      <update_rate>30</update_rate>
+      <camera>
+        <image>
+          <width>1280</width>
+          <height>720</height>
+          <format>R8G8B8</format>
+        </image>
+      </camera>
+      <plugin name="camera_depth_controller" filename="libgazebo_ros_depth_camera.so">
+        <cameraName>camera_depth</cameraName>
+        <imageTopicName>depth/image_raw</imageTopicName>
+        <frameName>camera_depth_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+  
   <gazebo>
     <plugin name="control"
       filename="libgazebo_ros_control.so">
-      <robotNamespace>/</robotNamespace>
     </plugin>
   </gazebo>
 
@@ -818,9 +844,9 @@
   <gazebo>
     <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
       <commandTopic>cmd_vel</commandTopic>
-      <odometryTopic></odometryTopic>
-      <odometryFrame></odometryFrame>
-      <odometryRate>0.0</odometryRate>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>10.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>

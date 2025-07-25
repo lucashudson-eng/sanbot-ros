@@ -7,8 +7,8 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 JOINT_LIMITS = {
     'wing_left': {'lower': -1.5708, 'upper': 3.1416, 'name': 'Asa Esquerda'},
     'wing_right': {'lower': -1.5708, 'upper': 3.1416, 'name': 'Asa Direita'},
-    'neck': {'lower': -1.5708, 'upper': 1.5708, 'name': 'Pescoço (Pan)'},
-    'head': {'lower': 0.0, 'upper': 0.656, 'name': 'Cabeça (Tilt)'}
+    'head_pan': {'lower': -1.5708, 'upper': 1.5708, 'name': 'Cabeça Pan (Yaw)'},
+    'head_tilt': {'lower': 0.0, 'upper': 0.656, 'name': 'Cabeça Tilt (Pitch)'}
 }
 
 def test_all_joint_limits():
@@ -28,11 +28,11 @@ def test_all_joint_limits():
     
     # Teste 3: Pescoço (isolado)
     print("\n3. TESTE DO PESCOÇO (ISOLADO)")
-    test_single_joint_limits('neck', '/head_controller/command', is_head_joint=True)
+    test_single_joint_limits('head_pan', '/head_controller/command', is_head_joint=True)
     
     # Teste 4: Cabeça (isolado)
     print("\n4. TESTE DA CABEÇA (ISOLADO)")
-    test_single_joint_limits('head', '/head_controller/command', is_head_joint=True)
+    test_single_joint_limits('head_tilt', '/head_controller/command', is_head_joint=True)
     
     # Teste 5: Cabeça combinada (pan + tilt nos limites)
     print("\n5. TESTE DA CABEÇA COMBINADA (LIMITES MÁXIMOS)")
@@ -80,8 +80,8 @@ def test_head_combined_limits():
     pub = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=10)
     rospy.sleep(1)
     
-    neck_limits = JOINT_LIMITS['neck']
-    head_limits = JOINT_LIMITS['head']
+    neck_limits = JOINT_LIMITS['head_pan']
+    head_limits = JOINT_LIMITS['head_tilt']
     
     print("Testando combinações de limites máximos:")
     
@@ -116,8 +116,8 @@ def test_head_combined_intermediate():
     pub = rospy.Publisher('/head_controller/command', JointTrajectory, queue_size=10)
     rospy.sleep(1)
     
-    neck_limits = JOINT_LIMITS['neck']
-    head_limits = JOINT_LIMITS['head']
+    neck_limits = JOINT_LIMITS['head_pan']
+    head_limits = JOINT_LIMITS['head_tilt']
     
     print("Testando posições intermediárias:")
     
@@ -143,14 +143,14 @@ def move_to_position(joint_name, position, duration, pub, is_head_joint=False):
     
     if is_head_joint:
         # Para juntas da cabeça, precisa especificar ambas
-        if joint_name == 'neck':
-            traj.joint_names = ['neck', 'head']
+        if joint_name == 'head_pan':
+            traj.joint_names = ['head_pan', 'head_tilt']
             pt = JointTrajectoryPoint()
             pt.positions = [position, 0.0]  # Mantém head em 0
             pt.velocities = [0.0, 0.0]
             pt.time_from_start = rospy.Duration(duration)
-        else:  # head
-            traj.joint_names = ['neck', 'head']
+        else:  # head_tilt
+            traj.joint_names = ['head_pan', 'head_tilt']
             pt = JointTrajectoryPoint()
             pt.positions = [0.0, position]  # Mantém neck em 0
             pt.velocities = [0.0, 0.0]
@@ -169,7 +169,7 @@ def move_to_position(joint_name, position, duration, pub, is_head_joint=False):
 def move_head_combined(neck_angle, head_angle, duration, pub):
     """Move a cabeça para uma posição combinada"""
     traj = JointTrajectory()
-    traj.joint_names = ['neck', 'head']
+    traj.joint_names = ['head_pan', 'head_tilt']
     
     pt = JointTrajectoryPoint()
     pt.positions = [neck_angle, head_angle]

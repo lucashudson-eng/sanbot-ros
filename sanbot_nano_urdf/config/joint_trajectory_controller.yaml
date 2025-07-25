@@ -1,8 +1,8 @@
 head_controller:
   type: "position_controllers/JointTrajectoryController"
   joints:
-    - neck
-    - head
+    - head_pan
+    - head_tilt
 
 wing_left_controller:
   type: "position_controllers/JointTrajectoryController"
