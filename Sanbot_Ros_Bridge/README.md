@@ -5,43 +5,21 @@ An **Android** application that acts as a bridge between a **Sanbot** robot and 
 * **MQTT** (port **1883**) for telemetry and control messages
 * **RTMP** (port **1935**) for streaming the robot's camera
 
-The app forwards sensor data from the robot to MQTT, receives control commands from ROS via MQTT, and streams the video feed to the RTMP server.
+The app forwards sensor data from the robot to MQTT/ROS, receives control commands from ROS via MQTT, and streams the video feed to the RTMP server.
 
 ---
 ## :bookmark_tabs: Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [App Installation](#app-installation)
-3. [Running](#running)
-4. [Usage](#usage)
-5. [License](#license)
-
----
-## Prerequisites
-
-On the **PC** running Ubuntu (ROS + Docker host):
-
-| Software | Minimum version | Notes |
-|----------|-----------------|-------|
-| Docker   | 20.10           | Required for the MQTT/RTMP container |
-| ROS Noetic | —             | Validated on Ubuntu 20.04 |
-| Python 3 | 3.8             | Dependencies for the `sanbot_ros` package |
-
-On the **Sanbot robot**:
-
-* Free USB port (to enable ADB-over-Wi-Fi once or to transfer APK through File Manager)
-
-Optional tools (for installation / debugging):
-
-```bash
-sudo apt install android-tools-adb
-```
+1. [App Installation](#app-installation)
+2. [Running](#running)
+3. [Usage](#usage)
+4. [License](#license)
 
 ---
 ## App Installation
 
 ### 1. Flash Drive and File Manager (quick method)
 
-1. Copy the pre-built APK `librarydemod-debug.apk` (or the latest release) to a FAT32-formatted USB flash drive.  
+1. Copy the pre-built APK `librarydemod-debug.apk` (or the latest release) to a NTFS formatted USB flash drive.  
 2. Plug the flash drive into the USB port on the robot’s head.  
 3. On the robot, open **File Manager**, navigate to the USB drive (often labelled **udisk**) and tap the APK.  
 4. When prompted, allow installation from unknown sources and confirm **Install**.  
@@ -51,6 +29,10 @@ sudo apt install android-tools-adb
 ### 2. Connect robot to PC via ADB
 
 You have two options to establish an **ADB** connection, depending on whether you prefer a permanent wireless setup or a quick USB connection to enable ADB-over-Wi-Fi.
+
+```bash
+sudo apt install android-tools-adb
+```
 
 **A) USB-only (quick install)**
 
@@ -74,8 +56,6 @@ You have two options to establish an **ADB** connection, depending on whether yo
 3. Connect wirelessly and unplug the cable:
    ```bash
    adb connect <ROBOT_IP>:5555
-   # Example:
-   adb connect 192.168.0.42:5555
    ```
 4. From now on you can install / debug the app wirelessly until the robot reboots (repeat if necessary).
 5. Skip to step *4. Build from source* below.
@@ -105,7 +85,7 @@ adb install -r ~/catkin_ws/src/sanbot-ros/Sanbot_Ros_Bridge/librarydemod/build/o
 ---
 ## Running
 
-1. Make sure the **sanbot_mqtt_rtmp** container is running:
+1. Make sure the **sanbot_mqtt_rtmp** container is running (or another solution to have MQTT broker and RTMP server locally):
 
 ```bash
 docker ps | grep sanbot_mqtt_rtmp
@@ -118,7 +98,6 @@ If the command prints nothing, the MQTT/RTMP container is not running yet. Build
 ```bash
 cd ~/catkin_ws/src/sanbot-ros/docker_mqtt_rtmp
 docker build -t sanbot_mqtt_rtmp .
-# Run in detached mode and restart automatically at boot
 docker run -d --name sanbot_mqtt_rtmp --restart unless-stopped -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
 ```
 (To stop later: `docker stop sanbot_mqtt_rtmp && docker rm sanbot_mqtt_rtmp`)
@@ -126,14 +105,14 @@ docker run -d --name sanbot_mqtt_rtmp --restart unless-stopped -p 1883:1883 -p 1
 2. On the PC, start the ROS-MQTT-RTMP bridge:
 
 ```bash
-roslaunch sanbot_ros bridge.launch
+roslaunch sanbot_ros app_bridge.launch
 ```
 
 3. On the robot, open the **Sanbot ROS Bridge** app.
 
    * Discover the PC IP (broker host) on the PC itself:
      ```bash
-     hostname -I | awk '{print $1}'   # e.g. 192.168.0.10
+     hostname -I | awk '{print $1}'
      ```
    * In the app top field, enter this IP in **Server IP**.
    * Tap **Connect** to establish the MQTT link.

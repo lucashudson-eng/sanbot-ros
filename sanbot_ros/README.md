@@ -53,7 +53,7 @@ It bundles custom message definitions, a ready-to-use launch file, helper conver
 2. **Connect the robot & PC to the same network** and note the PC IP (`hostname -I | awk '{print $1}'`).
 3. **Launch the ROS bridge** on the PC:
    ```bash
-   roslaunch sanbot_ros bridge.launch
+   roslaunch sanbot_ros app_bridge.launch
    ```
 4. **Install & open the Android bridge app** (`Sanbot_Ros_Bridge`) on the robot.
 

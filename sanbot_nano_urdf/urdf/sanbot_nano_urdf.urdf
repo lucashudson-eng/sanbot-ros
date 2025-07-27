@@ -1814,7 +1814,6 @@
     </sensor>
   </gazebo>
 
-
   <gazebo reference="ir_4_link">
     <sensor type="ray" name="ir_4">
       <pose>-0.014 0 0 0 3.141593 0</pose>

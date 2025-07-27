@@ -8,9 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
-        android:hint="Enter broker IP"
-        android:inputType="textUri"
-        android:text="192.168.0.175" />
+        android:hint="Server IP"
+        android:inputType="textUri" />
 
     <Button
         android:id="@+id/buttonConnect"

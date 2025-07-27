@@ -3,8 +3,8 @@
   <name>sanbot_ros</name>
   <version>1.0.0</version>
   <description>
-    ROS package for Sanbot NANO robot integration. Provides MQTT bridge functionality for robot control
-    and a keyboard teleoperation interface. Enables communication between ROS topics and Sanbot's MQTT protocol.
+    ROS package for Sanbot robots integration. Provides MQTT and RTM bridge functionality for robot control
+    and a keyboard teleoperation interface.
   </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
