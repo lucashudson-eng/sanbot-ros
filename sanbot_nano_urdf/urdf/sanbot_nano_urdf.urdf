@@ -1343,7 +1343,7 @@
       xyz="0 0 0" />
   </joint>
   <link
-    name="ir_7_Link">
+    name="ir_7_link">
     <inertial>
       <origin
         xyz="0.005 -1.3878E-17 -4.8572E-17"
@@ -1364,7 +1364,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/ir_7_Link.STL" />
+          filename="package://sanbot_nano_urdf/meshes/ir_7_link.STL" />
       </geometry>
       <material
         name="">
@@ -1378,7 +1378,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/ir_7_Link.STL" />
+          filename="package://sanbot_nano_urdf/meshes/ir_7_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1391,12 +1391,12 @@
     <parent
       link="base_link" />
     <child
-      link="ir_7_Link" />
+      link="ir_7_link" />
     <axis
       xyz="0 0 0" />
   </joint>
   <link
-    name="ir_8_Link">
+    name="ir_8_link">
     <inertial>
       <origin
         xyz="0.005 -1.3878E-17 0"
@@ -1417,7 +1417,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/ir_8_Link.STL" />
+          filename="package://sanbot_nano_urdf/meshes/ir_8_link.STL" />
       </geometry>
       <material
         name="">
@@ -1431,7 +1431,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sanbot_nano_urdf/meshes/ir_8_Link.STL" />
+          filename="package://sanbot_nano_urdf/meshes/ir_8_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1444,7 +1444,7 @@
     <parent
       link="base_link" />
     <child
-      link="ir_8_Link" />
+      link="ir_8_link" />
     <axis
       xyz="0 0 0" />
   </joint>
@@ -1750,5 +1750,362 @@
       <odometryRate>10.0</odometryRate>
       <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
+  </gazebo>
+
+  <gazebo reference="ir_1_link">
+    <sensor type="ray" name="ir_1">
+      <pose>0 0 -0.009 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_1_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_1</topicName>
+        <frameName>ir_1_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_2_link">
+    <sensor type="ray" name="ir_2">
+      <pose>0 0 -0.009 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_2_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_2</topicName>
+        <frameName>ir_2_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_3_link">
+    <sensor type="ray" name="ir_3">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_3_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_3</topicName>
+        <frameName>ir_3_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+  <gazebo reference="ir_4_link">
+    <sensor type="ray" name="ir_4">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_4_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_4</topicName>
+        <frameName>ir_4_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_5_link">
+    <sensor type="ray" name="ir_5">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_5_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_5</topicName>
+        <frameName>ir_5_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_6_link">
+    <sensor type="ray" name="ir_6">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_6_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_6</topicName>
+        <frameName>ir_6_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_7_link">
+    <sensor type="ray" name="ir_7">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_7_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_7</topicName>
+        <frameName>ir_7_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_8_link">
+    <sensor type="ray" name="ir_8">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_8_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_8</topicName>
+        <frameName>ir_8_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_9_link">
+    <sensor type="ray" name="ir_9">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_9_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_9</topicName>
+        <frameName>ir_9_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_10_link">
+    <sensor type="ray" name="ir_10">
+      <pose>-0.014 0 0 0 3.141593 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_10_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_10</topicName>
+        <frameName>ir_10_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_11_link">
+    <sensor type="ray" name="ir_11">
+      <pose>0 0 -0.011 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_11_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_11</topicName>
+        <frameName>ir_11_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_12_link">
+    <sensor type="ray" name="ir_12">
+      <pose>0 0 -0.011 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_12_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_12</topicName>
+        <frameName>ir_12_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_13_link">
+    <sensor type="ray" name="ir_13">
+      <pose>0 0 -0.011 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_13_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_13</topicName>
+        <frameName>ir_13_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_14_link">
+    <sensor type="ray" name="ir_14">
+      <pose>0 0 -0.01 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_14_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_14</topicName>
+        <frameName>ir_14_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_15_link">
+    <sensor type="ray" name="ir_15">
+      <pose>0 0 -0.011 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_15_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_15</topicName>
+        <frameName>ir_15_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_16_link">
+    <sensor type="ray" name="ir_16">
+      <pose>0 0 -0.01 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_16_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_16</topicName>
+        <frameName>ir_16_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="ir_17_link">
+    <sensor type="ray" name="ir_17">
+      <pose>0 0 -0.011 0 1.5708 0</pose>
+      <visualize>true</visualize>
+      <ray>
+        <pose>-0.1 0 0 0 3.141593 0</pose>
+        <range>
+          <min>0.0</min>
+          <max>0.64</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ir_17_controller" filename="libgazebo_ros_range.so">
+        <topicName>ir_17</topicName>
+        <frameName>ir_17_link</frameName>
+        <radiation>infrared</radiation>
+        <updateRate>10.0</updateRate>
+      </plugin>
+    </sensor>
   </gazebo>
 </robot>
