@@ -41,7 +41,7 @@ def get_key():
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
     rospy.init_node('gamer_teleop')
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
     print(msg)
     print(f'currently: \t speed {linear_speed:.2f} \t turn {angular_speed:.2f}')

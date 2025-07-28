@@ -15,6 +15,11 @@ topics = ["/touch", "/pir", "/ir", "/voice_angle", "/obstacle", "/battery", "/in
 
 ros_publishers = {}
 
+# Namespace-aware topic handling (will be filled in __main__)
+namespaced_topics = []           # List of MQTT topics with namespace prefix (used for subscribe)
+topic_to_base = {}              # Mapping: namespaced → base topic ("/robo/ir" → "/ir")
+namespace_prefix = ""          # e.g. "/robo" or "" when no namespace
+
 def euler_to_quaternion(roll, pitch, yaw):
     """Convert Euler angles to quaternion."""
     # Convert degrees to radians
@@ -27,7 +32,7 @@ def euler_to_quaternion(roll, pitch, yaw):
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         rospy.loginfo("✅ Connected to MQTT broker")
-        for topic in topics:
+        for topic in namespaced_topics:
             client.subscribe(topic)
     else:
         rospy.logwarn(f"❌ Failed to connect to MQTT broker. Code: {rc}")
@@ -35,7 +40,12 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode("utf-8")
-        if msg.topic == "/voice_angle":
+
+        # Map the received MQTT topic back to its base form (without namespace) so that
+        # the logic below remains unchanged regardless of whether a ROS namespace is used.
+        base_topic = topic_to_base.get(msg.topic, msg.topic)
+
+        if base_topic == "/voice_angle":
             # Convert voice angle to Int32
             data = json.loads(payload)
             angle_msg = Int32()
@@ -43,7 +53,7 @@ def on_message(client, userdata, msg):
             ros_publishers[msg.topic].publish(angle_msg)
             return
 
-        elif msg.topic == "/obstacle":
+        elif base_topic == "/obstacle":
             # Convert obstacle detection to Bool
             data = json.loads(payload)
             obstacle_msg = Bool()
@@ -51,7 +61,7 @@ def on_message(client, userdata, msg):
             ros_publishers[msg.topic].publish(obstacle_msg)
             return
 
-        elif msg.topic == "/info":
+        elif base_topic == "/info":
             # Convert system information to Info
             data = json.loads(payload)
             info_msg = Info()
@@ -63,12 +73,12 @@ def on_message(client, userdata, msg):
             ros_publishers[msg.topic].publish(info_msg)
             return
 
-        elif msg.topic == "/ir":
+        elif base_topic == "/ir":
             # Convert IR data to Range
             data = json.loads(payload)
             range_msg = Range()
             range_msg.header.stamp = rospy.Time.now()
-            range_msg.header.frame_id = f"ir_sensor_{data['sensor']}"
+            range_msg.header.frame_id = f"ir_{data['sensor']}_link"
             
             # Set sensor type as IR
             range_msg.radiation_type = Range.INFRARED
@@ -80,19 +90,16 @@ def on_message(client, userdata, msg):
             range_msg.min_range = 0.0  # 0 cm
             range_msg.max_range = 0.64  # 64 cm
             
-            # Set approximate field of view (FOV) in radians
-            # Using a typical value for IR sensors
-            range_msg.field_of_view = math.radians(5.0)  # ~5 degrees
-            
             ros_publishers[msg.topic].publish(range_msg)
             return
 
-        elif msg.topic == "/battery":
+        elif base_topic == "/battery":
             # Convert battery data to BatteryState
             data = json.loads(payload)
             battery_msg = BatteryState()
             battery_msg.header.stamp = rospy.Time.now()
             battery_msg.header.frame_id = "battery"
+            battery_msg.present = True
             
             # Convert percentage to value between 0 and 1
             battery_level = float(data["battery_level"])
@@ -113,7 +120,7 @@ def on_message(client, userdata, msg):
             rospy.loginfo_throttle(1, f"🔋 Battery status: {data['battery_level']}%, {data['battery_status']}")
             return
 
-        elif msg.topic == "/imu":
+        elif base_topic == "/imu":
             # Handle gyroscope data (orientation angles)
             data = json.loads(payload)
             imu_msg = Imu()
@@ -149,21 +156,30 @@ if __name__ == "__main__":
     MQTT_BROKER_IP = rospy.get_param("/mqtt_broker_ip", DEFAULT_MQTT_BROKER_IP)
     MQTT_PORT = int(rospy.get_param("/mqtt_port", DEFAULT_MQTT_PORT))
 
-    for topic in topics:
-        if topic == "imu":
-            ros_publishers[topic] = rospy.Publisher(topic, Imu, queue_size=10)
-        elif topic == "battery":
-            ros_publishers[topic] = rospy.Publisher(topic, BatteryState, queue_size=10)
-        elif topic == "ir":
-            ros_publishers[topic] = rospy.Publisher(topic, Range, queue_size=10)
-        elif topic == "voice_angle":
-            ros_publishers[topic] = rospy.Publisher(topic, Int32, queue_size=10)
-        elif topic == "obstacle":
-            ros_publishers[topic] = rospy.Publisher(topic, Bool, queue_size=10)
-        elif topic == "info":
-            ros_publishers[topic] = rospy.Publisher(topic, Info, queue_size=10)
+    # Build namespace prefix (if any). rospy.get_namespace() returns '/' when no namespace.
+    ros_ns = rospy.get_namespace().rstrip('/')  # e.g. '/robo' or ''
+    namespace_prefix = '' if ros_ns in ['', '/'] else ros_ns
+
+    # Generate namespaced MQTT topics and mapping
+    namespaced_topics = [(namespace_prefix + t) if namespace_prefix else t for t in topics]
+    topic_to_base = {ns_t: base_t for ns_t, base_t in zip(namespaced_topics, topics)}
+
+    # Create ROS publishers for the namespaced topics
+    for base_topic, ns_topic in zip(topics, namespaced_topics):
+        if base_topic == "/imu":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, Imu, queue_size=10)
+        elif base_topic == "/battery":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, BatteryState, queue_size=10)
+        elif base_topic == "/ir":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, Range, queue_size=10)
+        elif base_topic == "/voice_angle":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, Int32, queue_size=10)
+        elif base_topic == "/obstacle":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, Bool, queue_size=10)
+        elif base_topic == "/info":
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, Info, queue_size=10)
         else:
-            ros_publishers[topic] = rospy.Publisher(topic, String, queue_size=10)
+            ros_publishers[ns_topic] = rospy.Publisher(ns_topic, String, queue_size=10)
 
     # MQTT
     client = mqtt.Client()

@@ -55,9 +55,12 @@ import com.pedro.library.generic.GenericStream;
 import com.pedro.encoder.input.sources.audio.MicrophoneSource;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.text.Editable;
+import android.text.TextWatcher;
 
 public class MainActivity extends TopBaseActivity implements MqttHandler.MqttStatusListener, TextToSpeech.OnInitListener, ConnectChecker {
 
+    private EditText editTextName;
     private EditText editTextIp;
     private Button buttonConnect;
     private Button buttonClear;
@@ -74,10 +77,12 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     private MqttHandler mqttHandler;
     private boolean connected = false;
-    private String selectedTopic = "Todos";
+    private String selectedTopic = "All";
+    private String robotName = "";
 
     private static final String PREFS_NAME = "mqtt_prefs";
     private static final String KEY_LAST_IP = "last_broker_ip";
+    private static final String KEY_LAST_NAME = "last_robot_name";
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
 
     private SystemManager systemManager;
@@ -120,6 +125,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         );
         setHeadBackground(topDrawable);
 
+        editTextName = findViewById(R.id.editTextName);
         editTextIp = findViewById(R.id.editTextIp);
         buttonConnect = findViewById(R.id.buttonConnect);
         buttonClear = findViewById(R.id.buttonClear);
@@ -139,11 +145,16 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String lastName = prefs.getString(KEY_LAST_NAME, "");
+        if (lastName != null) {
+            editTextName.setText(lastName);
+        }
+
         String lastIp = prefs.getString(KEY_LAST_IP, null);
         if (lastIp != null) {
             editTextIp.setText(lastIp);
         }
-        lastIp = editTextIp.getText().toString().trim();
+        robotName = editTextName.getText().toString().trim();
 
         mqttHandler = new MqttHandler(this, this);
 
@@ -186,9 +197,10 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                     .edit()
                     .putString(KEY_LAST_IP, ip)
+                    .putString(KEY_LAST_NAME, editTextName.getText().toString().trim())
                     .apply();
 
-            mqttHandler.setBrokerIp(ip);
+            robotName = editTextName.getText().toString().trim();
 
             if (!connected) {
                 mqttHandler.connect();
@@ -283,6 +295,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 surfaceViewPreview.setVisibility(View.GONE);
             }
         });
+
+        editTextName.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                robotName = s.toString().trim();
+                if (connected) {
+                    subscribeToAllTopics();
+                }
+            }
+        });
     }
 
     @Override
@@ -311,13 +334,14 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         startBatteryPublishingLoop();
         startInfoPublishingLoop();
 
-        // zera a cabeça na vertical
-        AbsoluteAngleHeadMotion absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_VERTICAL,
+        // zera a cabeça na horizontal
+        AbsoluteAngleHeadMotion absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_HORIZONTAL,
                 AbsoluteAngleHeadMotion.ACTION_START, 100, 0);
         headMotionManager.doAbsoluteAngleMotion(absoluteAngleHeadMotion);
-        // zera a cabeça na horizontal
-        absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_HORIZONTAL,
-                AbsoluteAngleHeadMotion.ACTION_START, 100, 0);
+        
+        // zera a cabeça na vertical
+        absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_VERTICAL,
+                AbsoluteAngleHeadMotion.ACTION_START, 100, 37);
         headMotionManager.doAbsoluteAngleMotion(absoluteAngleHeadMotion);
         
         hardWareManager = (HardWareManager) getUnitManager(FuncConstant.HARDWARE_MANAGER);
@@ -330,7 +354,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                             JSONObject touchJson = new JSONObject();
                             touchJson.put("part", part);
                             touchJson.put("description", getTouchPartName(part));
-                            mqttHandler.publishMessage("/touch", touchJson.toString());
+                            mqttHandler.publishMessage(getPrefixedTopic("touch"), touchJson.toString());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -346,7 +370,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                             JSONObject pirJson = new JSONObject();
                             pirJson.put("part", part == 1 ? "front" : "back");
                             pirJson.put("status", isChecked ? 1 : 0);
-                            mqttHandler.publishMessage("/pir", pirJson.toString());
+                            mqttHandler.publishMessage(getPrefixedTopic("pir"), pirJson.toString());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -367,7 +391,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                                 JSONObject irJson = new JSONObject();
                                 irJson.put("sensor", part);
                                 irJson.put("distance_cm", distance);
-                                mqttHandler.publishMessage("/ir", irJson.toString());
+                                mqttHandler.publishMessage(getPrefixedTopic("ir"), irJson.toString());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -382,7 +406,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 try {
                     JSONObject voiceJson = new JSONObject();
                     voiceJson.put("angle", angle);
-                    mqttHandler.publishMessage("/voice_angle", voiceJson.toString());
+                    mqttHandler.publishMessage(getPrefixedTopic("voice_angle"), voiceJson.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -395,7 +419,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 try{
                     JSONObject json = new JSONObject();
                     json.put("status", 1);
-                    mqttHandler.publishMessage("/obstacle", json.toString());
+                    mqttHandler.publishMessage(getPrefixedTopic("obstacle"), json.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -410,7 +434,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                     gyroJson.put("x", x);
                     gyroJson.put("y", y);
                     gyroJson.put("z", z);
-                    mqttHandler.publishMessage("/imu", gyroJson.toString());
+                    mqttHandler.publishMessage(getPrefixedTopic("imu"), gyroJson.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -510,15 +534,15 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         });
 
-        if ("/light".equals(topic)) {
+        if (getPrefixedTopic("light").equals(topic)) {
             handleLightControl(message);
-        } else if ("/move".equals(topic)) {
+        } else if (getPrefixedTopic("move").equals(topic)) {
             handleMotionControl(message);
-        } else if ("/joints".equals(topic)) {
+        } else if (getPrefixedTopic("joints").equals(topic)) {
             handleJointMotion(message);
-        } else if ("/led".equals(topic)) {
+        } else if (getPrefixedTopic("led").equals(topic)) {
             handleLedControl(message);
-        } else if ("/speak".equals(topic)) {
+        } else if (getPrefixedTopic("speak").equals(topic)) {
             try {
                 JSONObject json = new JSONObject(message);
                 String texto = json.optString("msg", "");
@@ -767,10 +791,19 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     public void onTopicsUpdated(java.util.List<String> topics) {}
 
     private void subscribeToAllTopics() {
-        String[] topics = getResources().getStringArray(R.array.topics_array);
-        for (int i = 1; i < topics.length; i++) {
-            mqttHandler.subscribeToTopic(topics[i]);
+        String[] suffixes = new String[]{"light", "move", "joints", "led", "speak", "ir", "battery", "touch", "pir", "voice_angle", "info", "obstacle", "imu", "speech"};
+        java.util.List<String> spinnerItems = new java.util.ArrayList<>();
+        spinnerItems.add("All");
+
+        for (String suffix : suffixes) {
+            String topic = getPrefixedTopic(suffix);
+            mqttHandler.subscribeToTopic(topic);
+            spinnerItems.add(topic);
         }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerItems);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTopics.setAdapter(adapter);
     }
 
     private void appendMessage(String msg) {
@@ -871,7 +904,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("battery_level", batteryLevel);
                         json.put("battery_status", statusStr);
 
-                        mqttHandler.publishMessage("/battery", json.toString());
+                        mqttHandler.publishMessage(getPrefixedTopic("battery"), json.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -894,7 +927,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("android_version", android.os.Build.VERSION.RELEASE);
                         json.put("device_model", android.os.Build.MODEL);
 
-                        mqttHandler.publishMessage("/info", json.toString());
+                        mqttHandler.publishMessage(getPrefixedTopic("info"), json.toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -910,7 +943,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             try {
                 JSONObject json = new JSONObject();
                 json.put("msg", texto);
-                mqttHandler.publishMessage("/speech", json.toString());
+                mqttHandler.publishMessage(getPrefixedTopic("speech"), json.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1048,4 +1081,11 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
     }
 
+    private String getPrefixedTopic(String suffix) {
+        if (robotName != null && !robotName.isEmpty()) {
+            return "/" + robotName + "/" + suffix;
+        } else {
+            return "/" + suffix;
+        }
+    }
 }

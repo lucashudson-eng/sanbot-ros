@@ -27,7 +27,7 @@ Because native ROS support on Android is still complex, the application relies o
 <table>
   <tr>
     <td>
-      <img src="assets/app_screen.png" alt="Main screen of the app" width="400">
+      <img src="assets/app_screen.png" alt="Main screen of the app" width="500">
     </td>
     <td>
       The top section contains a field to enter the PC IP address running the ROS package (<code>sanbot_ros/</code>) together with the MQTT and RTMP servers (<code>docker_mqtt_rtmp/</code>).<br>
@@ -115,6 +115,7 @@ Therefore, some features do not work even with the official demo app (`Sanbot_Op
 - **Head horizontal movement (pan)** – when I send a pan command, it moves the vertical (tilt) axis instead.
 - **Wing movement** – the documentation mentions a `WingMotionManager`, but I only found `HandMotionManager` and `FingerMotionManager` in the SDK, which might belong to the Max model and have no effect on the Nano.
 - **Speed control** – when controlling head and wheel movement, the speed parameter is ignored.
+- **LEDs** – some body parts control LEDs don't work as expected.
 - **3D camera** – is it possible to capture data from this camera? It is not described in the SDK, but maybe Android allows access, similar to the other HD camera that the SDK also omits.
 
 **If you test the repository on different models or versions, feedback on functionality is welcome.**

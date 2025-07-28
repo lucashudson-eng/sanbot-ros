@@ -80,15 +80,15 @@ def callback_joints(msg):
         if point.time_from_start.to_sec() <= 0.0:
             return
 
-        # Process head_pan and head_tilt joints
+        # Process joints (head + wings)
         for i, joint_name in enumerate(msg.joint_names):
-            if joint_name in ["head_pan", "head_tilt"]:
+            if joint_name in ["head_pan", "head_tilt", "wing_left", "wing_right"]:
                 data = {
                     "joint": joint_name,
-                    "speed": 100  # Fixed 100 % as solicitado
+                    "speed": 100  # Velocidade fixa em 100% (requisito)
                 }
 
-                # Position → angle em graus
+                # Converte posição (radianos) para ângulo em graus
                 if len(point.positions) > i:
                     angle_deg = int(math.degrees(point.positions[i]))
                     data["angle"] = angle_deg
@@ -137,13 +137,30 @@ if __name__ == "__main__":
     mqtt_client.connect(MQTT_BROKER_IP, MQTT_PORT, 60)
     mqtt_client.loop_start()
 
-    # ROS Subscriptions
-    rospy.Subscriber("/cmd_vel", Twist, callback_cmd_vel)
-    rospy.Subscriber("/move", Move, callback_move)
-    rospy.Subscriber("/head_controller/command", JointTrajectory, callback_joints)
-    rospy.Subscriber("/light", UInt8, callback_light)
-    rospy.Subscriber("/led", Led, callback_led)
-    rospy.Subscriber("/speak", String, callback_speak)
+    # Detect ROS namespace (if any) and adjust topics accordingly
+    ros_ns = rospy.get_namespace().rstrip('/')  # e.g. '/robo' or ''
+    namespace_prefix = '' if ros_ns in ['', '/'] else ros_ns
+
+    def add_ns(base):
+        """Add namespace prefix to a topic that already starts with '/'."""
+        return f"{namespace_prefix}{base}" if namespace_prefix else base
+
+    # Update MQTT topic names to include the namespace (if any)
+    TOPIC_MOVE = add_ns(TOPIC_MOVE)
+    TOPIC_LIGHT = add_ns(TOPIC_LIGHT)
+    TOPIC_LED = add_ns(TOPIC_LED)
+    TOPIC_SPEAK = add_ns(TOPIC_SPEAK)
+    TOPIC_JOINTS = add_ns(TOPIC_JOINTS)
+
+    # ROS Subscriptions (use relative names so they inherit the node's namespace)
+    rospy.Subscriber("cmd_vel", Twist, callback_cmd_vel)
+    rospy.Subscriber("move", Move, callback_move)
+    rospy.Subscriber("head_controller/command", JointTrajectory, callback_joints)
+    rospy.Subscriber("wing_left_controller/command", JointTrajectory, callback_joints)
+    rospy.Subscriber("wing_right_controller/command", JointTrajectory, callback_joints)
+    rospy.Subscriber("light", UInt8, callback_light)
+    rospy.Subscriber("led", Led, callback_led)
+    rospy.Subscriber("speak", String, callback_speak)
 
     rospy.loginfo("🔁 Sending ROS commands to Android app via MQTT...")
     rospy.spin()

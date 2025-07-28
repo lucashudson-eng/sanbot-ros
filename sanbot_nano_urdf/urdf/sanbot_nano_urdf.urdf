@@ -1724,7 +1724,7 @@
         </range>
       </ray>
       <plugin name="ir_1_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_1</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_1_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1744,7 +1744,7 @@
         </range>
       </ray>
       <plugin name="ir_2_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_2</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_2_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1764,7 +1764,7 @@
         </range>
       </ray>
       <plugin name="ir_3_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_3</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_3_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1784,7 +1784,7 @@
         </range>
       </ray>
       <plugin name="ir_4_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_4</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_4_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1804,7 +1804,7 @@
         </range>
       </ray>
       <plugin name="ir_5_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_5</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_5_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1824,7 +1824,7 @@
         </range>
       </ray>
       <plugin name="ir_6_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_6</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_6_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1844,7 +1844,7 @@
         </range>
       </ray>
       <plugin name="ir_7_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_7</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_7_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1864,7 +1864,7 @@
         </range>
       </ray>
       <plugin name="ir_8_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_8</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_8_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1884,7 +1884,7 @@
         </range>
       </ray>
       <plugin name="ir_9_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_9</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_9_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1904,7 +1904,7 @@
         </range>
       </ray>
       <plugin name="ir_10_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_10</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_10_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1924,7 +1924,7 @@
         </range>
       </ray>
       <plugin name="ir_11_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_11</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_11_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1944,7 +1944,7 @@
         </range>
       </ray>
       <plugin name="ir_12_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_12</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_12_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1964,7 +1964,7 @@
         </range>
       </ray>
       <plugin name="ir_13_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_13</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_13_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -1984,7 +1984,7 @@
         </range>
       </ray>
       <plugin name="ir_14_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_14</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_14_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -2004,7 +2004,7 @@
         </range>
       </ray>
       <plugin name="ir_15_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_15</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_15_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -2024,7 +2024,7 @@
         </range>
       </ray>
       <plugin name="ir_16_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_16</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_16_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>
@@ -2044,7 +2044,7 @@
         </range>
       </ray>
       <plugin name="ir_17_controller" filename="libgazebo_ros_range.so">
-        <topicName>ir_17</topicName>
+        <topicName>ir</topicName>
         <frameName>ir_17_link</frameName>
         <radiation>infrared</radiation>
         <updateRate>10.0</updateRate>

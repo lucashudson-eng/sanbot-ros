@@ -82,6 +82,16 @@ adb uninstall com.grin.sanbotrosbridge
 adb install -r ~/catkin_ws/src/sanbot-ros/Sanbot_Ros_Bridge/librarydemod/build/outputs/apk/debug/librarydemod-debug.apk
 ```
 
+### 5. Open APP
+
+Depending on the robot version, the app installed will appear in the **APP Market** under **Come into my life**. But if it doesn’t show up, it can be opened/closed with:
+
+
+```bash
+adb shell am start -n com.grin.sanbotrosbridge/.MainActivity
+adb shell am force-stop com.grin.sanbotrosbridge
+```
+
 ---
 ## Running
 
