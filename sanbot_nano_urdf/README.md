@@ -21,10 +21,11 @@ roslaunch sanbot_nano_urdf gazebo.launch   # Spawns the robot in an empty world
 | **Forehead camera** | `/camera_forehead/image_raw` | `sensor_msgs/Image` | RGB 1280×720 @ 30 Hz |
 | **Depth camera** | `/camera_depth/depth/image_raw` | `sensor_msgs/Image` | Depth 1280×720 @ 30 Hz |
 | **IMU** | `/imu` | `sensor_msgs/Imu` | Rigid body `base_link` |
-| **Infra-red** | `/ir_1 … /ir_17` | `sensor_msgs/Range` | 17 sensors distributed on the body (see URDF) |
-| **Velocity** | `/cmd_vel` (input) | `geometry_msgs/Twist` | Planar movement (plugin `planar_move`) |
+| **Infra-red** | `/ir` | `sensor_msgs/Range` | 17 sensors distributed on the body (see URDF) |
+| **Velocity** | `/cmd_vel` | `geometry_msgs/Twist` | Planar movement (plugin `planar_move`) |
+| **Joint controllers** | `/head_controller/command`, `/wing_left_controller/command`, `/wing_right_controller/command` | `trajectory_msgs/JointTrajectory` | Head pan/tilt & wings |
 
-Tip: use `rostopic echo /ir_3` or `rqt_image_view` to quickly visualize sensors.
+Tip: use `rostopic echo /ir` or `rqt_image_view` to quickly visualize sensors.
 
 ---
 

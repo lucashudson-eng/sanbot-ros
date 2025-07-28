@@ -27,10 +27,11 @@ Because native ROS support on Android is still complex, the application relies o
 <table>
   <tr>
     <td>
-      <img src="assets/app_screen.png" alt="Main screen of the app" width="500">
+      <img src="assets/app_screen.png" alt="Main screen of the app" width="1000">
     </td>
     <td>
-      The top section contains a field to enter the PC IP address running the ROS package (<code>sanbot_ros/</code>) together with the MQTT and RTMP servers (<code>docker_mqtt_rtmp/</code>).<br>
+      The top section includes a <strong>Namespace</strong> field, which is required when connecting multiple robots so that each one publishes and receives commands within its own /namespace. If this option is used, the <code>sanbot_ros/</code> node must also be launched with the corresponding namespace (<code>__ns:=</code>).
+      It also coints a field to enter the <strong>PC IP address</strong> running the ROS package (<code>sanbot_ros/</code>) together with the MQTT and RTMP servers (<code>docker_mqtt_rtmp/</code>).<br>
       The middle section offers several settings:
       <ul>
         <li><strong>Enable RTMP</strong> – turns camera streaming on or off.</li>
@@ -96,8 +97,8 @@ roslaunch sanbot_nano_urdf gazebo.launch
 ```
 
 <div style="display: flex; gap: 10px;">
-  <img src="assets/nano_gazebo.jpeg" alt="Sanbot Nano in Gazebo" width="400">
-  <img src="assets/nano_rviz.jpeg" alt="Sanbot Nano in RVIZ" width="400">
+  <img src="assets/gazebo_gif.gif" alt="Sanbot Nano in Gazebo" width="400">
+  <img src="assets/rviz_gif.gif" alt="Sanbot Nano in RVIZ" width="600">
 </div>
 
 ## Running

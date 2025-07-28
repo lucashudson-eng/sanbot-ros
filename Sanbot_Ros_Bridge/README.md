@@ -139,6 +139,8 @@ rostopic list
 
 Below is a quick reference of the MQTT topics and RTMP transmission to understood by the **Sanbot ROS Bridge** app and the JSON payloads expected / produced. All topics are rooted at the broker running on the PC (`mqtt://<PC_IP>:1883`).
 
+>  If multiple robots are used, specify a Namespace in the designated field. This ensures that all topics are prefixed with `/namespace`, preventing conflicts when multiple robots are publishing and subscribing to the same topics.
+
 ### 1. ROS → Robot (App subscribes)
 | MQTT topic | Purpose | JSON schema | Example |
 |------------|---------|-------------|---------|
@@ -148,9 +150,9 @@ Below is a quick reference of the MQTT topics and RTMP transmission to understoo
 | `ros/joints` | Head & wing servos | `{ "joint": string, "angle": int°, "speed": int%? }` | `{ "joint": "head_pan", "angle": 45 }` |
 | `ros/speak` | Text-to-Speech | `{ "msg": string }` | `{ "msg": "Hello, I am Sanbot" }` |
 
-> Notes
-> * Optional fields may be omitted.
-> * Angles are integers in **degrees**; speeds are percentages `0-100`.
+Notes
+* Optional fields may be omitted.
+* Angles are integers in **degrees**; speeds are percentages `0-100`.
 
 ### 2. Robot → ROS (App publishes)
 | MQTT topic | Content | Example payload |

@@ -1,25 +1,15 @@
- z# sanbot_ros
+# sanbot_ros
 
 **sanbot_ros** is the core ROS package that lets you interface with a **Sanbot** robot through standard ROS topics by transparently bridging them to MQTT control/telemetry and RTMP video streaming.  
 It bundles custom message definitions, a ready-to-use launch file, helper conversion scripts and a requirements file so you can get up and running in minutes.
 
 ---
 ## :bookmark_tabs: Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Installation](#installation)
-3. [Running](#running)
-4. [Available Topics](#available-topics)
-5. [Detailed Topic Descriptions](#detailed-topic-descriptions)
-6. [License](#license)
-
----
-## Prerequisites
-
-| Target | Software | Minimum version | Purpose |
-|--------|----------|-----------------|---------|
-| **PC (Ubuntu)** | ROS Noetic | — | Core ROS1 framework |
-|                | Docker | 20.10 | Runs the MQTT + RTMP container |
-|                | Python 3 | 3.8 | For helper scripts |
+1. [Installation](#installation)
+2. [Running](#running)
+3. [Available Topics](#available-topics)
+4. [Detailed Topic Descriptions](#detailed-topic-descriptions)
+5. [License](#license)
 
 ---
 ## Installation
@@ -46,21 +36,24 @@ It bundles custom message definitions, a ready-to-use launch file, helper conver
 1. **Start the MQTT + RTMP broker** (once per boot):
    ```bash
    cd ~/catkin_ws/src/sanbot-ros/docker_mqtt_rtmp
-   docker build -t sanbot_mqtt_rtmp .            # first time only
-   docker run -d --name sanbot_mqtt_rtmp --restart unless-stopped \
-     -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
+   docker build -t sanbot_mqtt_rtmp .
+   docker run -d --name sanbot_mqtt_rtmp --restart unless-stopped -p 1883:1883 -p 1935:1935 sanbot_mqtt_rtmp
    ```
 2. **Connect the robot & PC to the same network** and note the PC IP (`hostname -I | awk '{print $1}'`).
 3. **Launch the ROS bridge** on the PC:
    ```bash
    roslaunch sanbot_ros app_bridge.launch
    ```
-4. **Install & open the Android bridge app** (`Sanbot_Ros_Bridge`) on the robot.
+4. Using a **Namespace** is recommended when running multiple robots with multiple launch files. Make sure to also set the same Namespace in the Android APP field.
+   ```bash
+   roslaunch sanbot_ros app_bridge.launch __ns:=/robot
+   ```
+5. **Install & open the Android bridge app** (`Sanbot_Ros_Bridge`) on the robot.
 
    Enter the PC IP in *Server IP* and tap *Connect*.  
 
    Enable the *Camera* toggle if you want live video.
-5. Confirm that topics are visible on the PC:
+6. Confirm that topics are visible on the PC:
    ```bash
    rostopic list
    ```
@@ -70,32 +63,30 @@ It bundles custom message definitions, a ready-to-use launch file, helper conver
 
 | Topic | Direction | Description | Message type |
 |-------|-----------|-------------|--------------|
-| `sanbot/touch` | robot → ROS | Touch sensor events | `std_msgs/String` |
-| `sanbot/pir` | robot → ROS | PIR presence sensor | `std_msgs/String` |
-| `sanbot/ir` | robot → ROS | Infra-red distance | `sensor_msgs/Range` |
-| `sanbot/voice_angle` | robot → ROS | Sound source angle | `std_msgs/Int32` |
-| `sanbot/obstacle` | robot → ROS | Obstacle detection | `std_msgs/Bool` |
-| `sanbot/battery` | robot → ROS | Battery level & status | `sensor_msgs/BatteryState` |
-| `sanbot/info` | robot → ROS | System information | `sanbot_ros/Info` |
-| `sanbot/gyro` | robot → ROS | Orientation (IMU) | `sensor_msgs/Imu` |
-| `sanbot/speech` | robot → ROS | Speech recognition | `std_msgs/String` |
+| `/touch` | robot → ROS | Touch sensor events | `std_msgs/String` |
+| `/pir` | robot → ROS | PIR presence sensor | `std_msgs/String` |
+| `/ir` | robot → ROS | Infra-red distance | `sensor_msgs/Range` |
+| `/voice_angle` | robot → ROS | Sound source angle | `std_msgs/Int32` |
+| `/obstacle` | robot → ROS | Obstacle detection | `std_msgs/Bool` |
+| `/battery` | robot → ROS | Battery level & status | `sensor_msgs/BatteryState` |
+| `/info` | robot → ROS | System information | `sanbot_ros/Info` |
+| `/gyro` | robot → ROS | Orientation (IMU) | `sensor_msgs/Imu` |
+| `/speech` | robot → ROS | Speech recognition | `std_msgs/String` |
 | `/camera/image_raw` | robot → ROS | RTMP camera stream | `sensor_msgs/Image` |
-| `ros/light` | ROS → robot | White forehead LED | `std_msgs/UInt8` |
-| `ros/move` | ROS → robot | Discrete movement commands | `sanbot_ros/Move` |
-| `ros/cmd_vel` | ROS → robot | Continuous velocity | `geometry_msgs/Twist` |
-| `ros/joints` | ROS → robot | Head & wing servos | `trajectory_msgs/JointTrajectory` |
-| `ros/led` | ROS → robot | Color LEDs | `sanbot_ros/Led` |
-| `ros/speak` | ROS → robot | Text-to-speech | `std_msgs/String` |
-
-[Click here](#detailed-topic-descriptions) for in-depth payload definitions.
+| `/light` | ROS → robot | White forehead LED | `std_msgs/UInt8` |
+| `/move` | ROS → robot | Discrete movement commands | `sanbot_ros/Move` |
+| `/cmd_vel` | ROS → robot | Continuous velocity | `geometry_msgs/Twist` |
+| `/joints` | ROS → robot | Head & wing servos | `trajectory_msgs/JointTrajectory` |
+| `/led` | ROS → robot | Color LEDs | `sanbot_ros/Led` |
+| `/speak` | ROS → robot | Text-to-speech | `std_msgs/String` |
 
 ---
 ## Detailed Topic Descriptions
 
-<details>
+<details open>
 <summary><strong>Sensor Topics (robot → ROS)</strong></summary>
 
-### `sanbot/touch`
+### `/touch`
 Touch sensor events are published as space-separated strings.
 - **Type**: std_msgs/String
 - **Format**: `'part description'`
@@ -112,7 +103,7 @@ Touch sensor events are published as space-separated strings.
   data: '3 chest_right'
   ```
 
-### `sanbot/pir`
+### `/pir`
 PIR presence detection is published as a simple string.
 - **Type**: std_msgs/String
 - **Format**: `'location status'`
@@ -123,28 +114,27 @@ PIR presence detection is published as a simple string.
   data: 'front 1'
   ```
 
-### `sanbot/ir` (sensor_msgs/Range)
+### `/ir` (sensor_msgs/Range)
 Infrared distance sensor readings.
-- **Frame ID**: `ir_sensor_X` (where X is the sensor number)
+- **Frame ID**: `ir_X_link` (where X is the sensor number)
 - **Range**: 0.0 to 0.64 meters
 - **Radiation Type**: INFRARED
 
-### `sanbot/voice_angle` (std_msgs/Int32)
+### `/voice_angle` (std_msgs/Int32)
 Sound source localization angle.
 - **Value**: 0-360 degrees, indicating sound source direction
 
-### `sanbot/obstacle` (std_msgs/Bool)
+### `/obstacle` (std_msgs/Bool)
 Obstacle detection sensor status.
 - **Value**: true = obstacle detected, false = no obstacle
 
-### `sanbot/battery` (sensor_msgs/BatteryState)
+### `/battery` (sensor_msgs/BatteryState)
 Battery status information.
 - **Percentage**: 0.0 to 1.0 (0% to 100%)
 - **Status**: FULL(4), CHARGING(1), or NOT_CHARGING(3)
 - **Technology**: LION (Lithium-ion)
-- **Capacity**: 20.0 Ah
 
-### `sanbot/info`
+### `/info`
 Provides system information about the robot in a structured format.
 - **Type**: sanbot_ros/Info
 - **Fields**:
@@ -162,13 +152,13 @@ Provides system information about the robot in a structured format.
   device_model: "0.1.118"
   ```
 
-### `sanbot/gyro`
+### `/imu`
 Robot orientation in 3D space.
 - **Type**: `sensor_msgs/Imu`
 - **Data**: Orientation in quaternion (converted from roll, pitch, yaw angles)
 - **Frame**: "base_link"
 
-### `sanbot/speech`
+### `/speech`
 Speech recognition result is published as a simple string.
 - **Type**: std_msgs/String
 - **Format**: `'msg'`
@@ -178,7 +168,7 @@ Speech recognition result is published as a simple string.
   data: 'Hello, how are you?'
   ```
 
-### `/camera/image_raw`
+### `/camera_chin/image_raw`
 Camera stream decoded from an RTMP source.
 - **Type**: `sensor_msgs/Image`
 - **Source**: RTMP stream `rtmp://<robot_ip>:1935/live/stream`
@@ -187,10 +177,10 @@ Camera stream decoded from an RTMP source.
 
 </details>
 
-<details>
+<details open>
 <summary><strong>Control Topics (ROS → robot)</strong></summary>
 
-### `ros/light`
+### `/light`
 Control the white forehead LED.
 - **Type**: `std_msgs/UInt8`
 - **Values**: 
@@ -201,13 +191,13 @@ Control the white forehead LED.
 - **Example**: 
   ```bash
   # Turn on LED at medium brightness
-  rostopic pub /ros/light std_msgs/UInt8 "data: 2"
+  rostopic pub /light std_msgs/UInt8 "data: 2"
   
   # Turn off LED
-  rostopic pub /ros/light std_msgs/UInt8 "data: 0"
+  rostopic pub /light std_msgs/UInt8 "data: 0"
   ```
 
-### `ros/move`
+### `/move`
 Controls robot movement using structured message format.
 - **Type**: sanbot_ros/Move
 - **Fields**:
@@ -220,13 +210,13 @@ Controls robot movement using structured message format.
   - duration (int32): Movement duration in seconds (optional, 0 = not specified)
 - **Example**: 
   ```bash
-  rostopic pub /ros/move sanbot_ros/Move "direction: 'forward'
+  rostopic pub /move sanbot_ros/Move "direction: 'forward'
   speed: 7
   distance: 0
   duration: 2"
   ```
 
-### `ros/cmd_vel`
+### `/cmd_vel`
 Standard ROS velocity control.
 - **Type**: `geometry_msgs/Twist`
 - **Fields**:
@@ -236,7 +226,7 @@ Standard ROS velocity control.
 - **Note**: Preferred method for smooth continuous movement
 - **Example**: 
   ```bash
-  rostopic pub /ros/cmd_vel geometry_msgs/Twist "linear:
+  rostopic pub /cmd_vel geometry_msgs/Twist "linear:
     x: 0.5
     y: 0.8
     z: 0.0
@@ -245,8 +235,12 @@ Standard ROS velocity control.
     y: 0.0
     z: 0.0"
   ```
+- **Keyboard control**:
+  ```bask
+  rosrun sanbot_ros gamer_teleop.py
+  ```
 
-### `ros/joints`
+### `/joints`
 Set a angle to any robot joints using trajectory message format with joint name, angle and velocity.
 
 - **Type**: trajectory_msgs/JointTrajectory
@@ -258,24 +252,24 @@ Set a angle to any robot joints using trajectory message format with joint name,
 - **Available Joints**:
   - `head_pan`: Horizontal head rotation (left/right) - Range: -90° to +90° (-1.57 to +1.57 rad)
   - `head_tilt`: Vertical head rotation (up/down) - Range: 0° to +37° (0 to +0.65 rad)
-  - `wing_left`: Left wing movement (not implemented, not found in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
-  - `wing_right`: Right wing movement (not implemented, not found  in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
+  - `wing_left`: Left wing movement (not implemented on APP, not found in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
+  - `wing_right`: Right wing movement (not implemented on APP, not found  in SDK) - Range: -90° to +180° (-1.57 to +3.14 rad)
 - **Example**: 
   ```bash
   # Rotate head left to 45 degrees (~0.79 radians)
-  rostopic pub /ros/joints trajectory_msgs/JointTrajectory "joint_names: ['head_pan']
+  rostopic pub /joints trajectory_msgs/JointTrajectory "joint_names: ['head_pan']
   points:
   - positions: [-0.79]
     velocities: [0.5]"
   
   # Tilt head up to 29 degrees (~0.52 radians)
-  rostopic pub /ros/joints trajectory_msgs/JointTrajectory "joint_names: ['head_tilt']
+  rostopic pub /joints trajectory_msgs/JointTrajectory "joint_names: ['head_tilt']
   points:
   - positions: [0.52]
     velocities: [0.8]"
   ```
 
-### `ros/led`
+### `/led`
 Controls color LEDs using structured message format.
 - **Type**: sanbot_ros/Led
 - **Fields**:
@@ -290,13 +284,13 @@ Controls color LEDs using structured message format.
   - random (int8): Random mode (0 or 1)
 - **Example**: 
   ```bash
-  rostopic pub /ros/led sanbot_ros/Led "part: 'all_head'
+  rostopic pub /led sanbot_ros/Led "part: 'all_head'
   mode: 'blue'
   duration: 5
   random: 1"
   ```
 
-### `ros/speak`
+### `/speak`
 Triggers text-to-speech using a plain string with TTS engine selection.
 - **Type**: std_msgs/String
 - **Format**: `'text'`
@@ -307,15 +301,10 @@ Triggers text-to-speech using a plain string with TTS engine selection.
 - **Volume**: Fixed at system volume level
 - **Example**: 
   ```bash
-  rostopic pub /ros/speak std_msgs/String "data: 'Hello, I am Sanbot!'"
+  rostopic pub /speak std_msgs/String "data: 'Hello, I am Sanbot!'"
   ```
 
 </details>
-
----
-## Contributing
-
-Pull-requests are welcome! For major changes please open an issue first to discuss what you would like to change.
 
 ---
 ## License
