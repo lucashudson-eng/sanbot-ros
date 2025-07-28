@@ -24,26 +24,20 @@ This app serves as a bridge between the robot and a ROS 1 package, the framework
 
 Because native ROS support on Android is still complex, the application relies on MQTT, which follows the same publisher/subscriber paradigm, to send sensor data and receive control commands, and on RTMP for efficient camera streaming.
 
-<table>
-  <tr>
-    <td>
-      <img src="assets/app_screen.png" alt="Main screen of the app" width="1000">
-    </td>
-    <td>
-      The top section includes a <strong>Namespace</strong> field, which is required when connecting multiple robots so that each one publishes and receives commands within its own /namespace. If this option is used, the <code>sanbot_ros/</code> node must also be launched with the corresponding namespace (<code>__ns:=</code>).
-      It also coints a field to enter the <strong>PC IP address</strong> running the ROS package (<code>sanbot_ros/</code>) together with the MQTT and RTMP servers (<code>docker_mqtt_rtmp/</code>).<br>
-      The middle section offers several settings:
-      <ul>
-        <li><strong>Enable RTMP</strong> – turns camera streaming on or off.</li>
-        <li><strong>TTS source</strong> – choose between the SDK TTS (English or Chinese) or the Android native TTS (all languages).</li>
-        <li><strong>TTS language</strong>.</li>
-        <li><strong>Log topics</strong> – select which topic to display in the log area, all or none.</li>
-        <li><strong>Clear logs</strong>.</li>
-      </ul>
-      The bottom area shows the messages sent/received via MQTT. When RTMP is enabled, a live video preview appears on the right.
-    </td>
-  </tr>
-</table>
+<img src="assets/app_screen.png" alt="Main screen of the app" width="600">
+
+The top section includes a **Namespace** field, which is required when connecting multiple robots so that each one publishes and receives commands within its own /namespace. If this option is used, the `sanbot_ros/` node must also be launched with the corresponding namespace (`__ns:=`).
+
+It also coints a field to enter the **PC IP address** running the ROS package (`sanbot_ros/`) together with the MQTT and RTMP servers (`docker_mqtt_rtmp/`).
+
+The middle section offers several settings:
+- **Enable RTMP** – turns camera streaming on or off.
+- **TTS source** – choose between the SDK TTS (English or Chinese) or the Android native TTS (all languages).
+- **TTS language**.
+- **Log topics** – select which topic to display in the log area, all or none.
+- **Clear logs**.
+
+The bottom area shows the messages sent/received via MQTT. When RTMP is enabled, a live video preview appears on the right.
 
 ## docker_mqtt_rtmp/
 
