@@ -26,7 +26,7 @@ import com.sanbot.opensdk.function.beans.SpeakOption;
 import com.sanbot.opensdk.function.beans.handmotion.AbsoluteAngleHandMotion;
 import com.sanbot.opensdk.function.beans.handmotion.CombinationHandMotion;
 import com.sanbot.opensdk.function.beans.handmotion.NoAngleHandMotion;
-import com.sanbot.opensdk.function.unit.interfaces.BindBaseInterface;
+import com.sanbot.opensdk.base.BindBaseInterface;
 import com.sanbot.opensdk.function.beans.wheelmotion.NoAngleWheelMotion;
 import java.lang.reflect.Method;
 import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
