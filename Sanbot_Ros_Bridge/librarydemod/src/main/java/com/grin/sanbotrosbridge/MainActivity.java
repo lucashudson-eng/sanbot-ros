@@ -20,10 +20,19 @@ import java.util.Map;
 
 import com.sanbot.opensdk.base.TopBaseActivity;
 import com.sanbot.opensdk.beans.FuncConstant;
+import com.sanbot.opensdk.beans.Order;
+import com.sanbot.opensdk.function.beans.EmotionsType;
 import com.sanbot.opensdk.function.beans.SpeakOption;
+import com.sanbot.opensdk.function.beans.handmotion.AbsoluteAngleHandMotion;
+import com.sanbot.opensdk.function.beans.handmotion.CombinationHandMotion;
+import com.sanbot.opensdk.function.beans.handmotion.NoAngleHandMotion;
+import com.sanbot.opensdk.base.BindBaseInterface;
 import com.sanbot.opensdk.function.beans.wheelmotion.NoAngleWheelMotion;
+import java.lang.reflect.Method;
 import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
+import com.sanbot.opensdk.function.unit.HandMotionManager;
 import com.sanbot.opensdk.function.unit.HardWareManager;
+import com.sanbot.opensdk.function.unit.ModularMotionManager;
 import com.sanbot.opensdk.function.unit.SpeechManager;
 import com.sanbot.opensdk.function.unit.SystemManager;
 import com.sanbot.opensdk.function.unit.WheelMotionManager;
@@ -62,8 +71,12 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     private EditText editTextName;
     private EditText editTextIp;
+    private EditText editTextPort;
     private Button buttonConnect;
     private Button buttonClear;
+    private Button buttonClose;
+    private Button buttonCloseBottom;
+    private TextView textViewVersion;
     private Spinner spinnerTopics;
     private TextView textViewMessages;
     private ScrollView scrollView;
@@ -71,6 +84,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private SurfaceView surfaceViewPreview;
     private Spinner spinnerLanguage;
     private CheckBox checkBoxShowLogs;
+    private CheckBox checkBoxAutoConnect;
+    private CheckBox checkBoxAutoLaunch;
     private Switch switchTtsType;
     private ArrayAdapter<String> androidLanguageAdapter;
     private ArrayAdapter<String> sdkLanguageAdapter;
@@ -83,12 +98,17 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private static final String PREFS_NAME = "mqtt_prefs";
     private static final String KEY_LAST_IP = "last_broker_ip";
     private static final String KEY_LAST_NAME = "last_robot_name";
+    private static final String KEY_LAST_PORT = "last_broker_port";
+    private static final String KEY_AUTO_CONNECT = "auto_connect";
+    private static final String KEY_AUTO_LAUNCH = "auto_launch";
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
 
     private SystemManager systemManager;
     private HardWareManager hardWareManager;
     private WheelMotionManager wheelMotionManager;
     private HeadMotionManager headMotionManager;
+    private HandMotionManager handMotionManager;
+    private ModularMotionManager modularMotionManager;
     private SpeechManager speechManager;
 
 
@@ -98,6 +118,9 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
     private final Map<Integer, Long> lastIRUpdate = new HashMap<>();
     private static final long IR_UPDATE_INTERVAL_MS = 1000;  // 1 segundo por sensor
+    private long lastImuPublishMs = 0;
+    private static final long IMU_UPDATE_INTERVAL_MS = 200; // 5 Hz — unthrottled gyro ANRs the UI
+    private static final int MAX_LOG_CHARS = 8000;
 
     private TextToSpeech tts;
 
@@ -127,8 +150,16 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
         editTextName = findViewById(R.id.editTextName);
         editTextIp = findViewById(R.id.editTextIp);
+        editTextPort = findViewById(R.id.editTextPort);
         buttonConnect = findViewById(R.id.buttonConnect);
         buttonClear = findViewById(R.id.buttonClear);
+        buttonClose = findViewById(R.id.buttonClose);
+        buttonCloseBottom = findViewById(R.id.buttonCloseBottom);
+        textViewVersion = findViewById(R.id.textViewVersion);
+        if (textViewVersion != null) {
+            textViewVersion.setText(String.format(Locale.US, "v%s (%d)",
+                    BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+        }
         spinnerTopics = findViewById(R.id.spinnerTopics);
         textViewMessages = findViewById(R.id.textViewMessages);
         scrollView = findViewById(R.id.scrollView);
@@ -137,6 +168,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         switchRtmp = findViewById(R.id.switchRtmp);
         spinnerLanguage = findViewById(R.id.spinnerLanguage);
         checkBoxShowLogs = findViewById(R.id.checkBoxShowLogs);
+        checkBoxAutoConnect = findViewById(R.id.checkBoxAutoConnect);
+        checkBoxAutoLaunch = findViewById(R.id.checkBoxAutoLaunch);
         switchTtsType = findViewById(R.id.switchTtsType);
 
         // Configuração inicial da visibilidade dos elementos de log
@@ -154,11 +187,22 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         if (lastIp != null) {
             editTextIp.setText(lastIp);
         }
+        String lastPort = prefs.getString(KEY_LAST_PORT, "1883");
+        if (editTextPort != null && lastPort != null) {
+            editTextPort.setText(lastPort);
+        }
+        if (checkBoxAutoConnect != null) {
+            checkBoxAutoConnect.setChecked(prefs.getBoolean(KEY_AUTO_CONNECT, true));
+        }
+        if (checkBoxAutoLaunch != null) {
+            checkBoxAutoLaunch.setChecked(prefs.getBoolean(KEY_AUTO_LAUNCH, true));
+        }
         robotName = editTextName.getText().toString().trim();
 
         mqttHandler = new MqttHandler(this, this);
 
         mqttHandler.setBrokerIp(lastIp);
+        applyBrokerPortToHandler();
 
         // Configuração dos adaptadores de idioma
         androidLanguageAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, 
@@ -194,15 +238,19 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 return;
             }
 
+            String port = readBrokerPort();
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                     .edit()
                     .putString(KEY_LAST_IP, ip)
                     .putString(KEY_LAST_NAME, editTextName.getText().toString().trim())
+                    .putString(KEY_LAST_PORT, port)
                     .apply();
 
             robotName = editTextName.getText().toString().trim();
 
             if (!connected) {
+                mqttHandler.setBrokerIp(ip);
+                applyBrokerPortToHandler();
                 mqttHandler.connect();
                 buttonConnect.setEnabled(false);
                 buttonConnect.setText("Conectando...");
@@ -214,7 +262,29 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             }
         });
 
+        if (checkBoxAutoConnect != null) {
+            checkBoxAutoConnect.setOnCheckedChangeListener((buttonView, isChecked) ->
+                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                            .edit()
+                            .putBoolean(KEY_AUTO_CONNECT, isChecked)
+                            .apply());
+        }
+        if (checkBoxAutoLaunch != null) {
+            checkBoxAutoLaunch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                            .edit()
+                            .putBoolean(KEY_AUTO_LAUNCH, isChecked)
+                            .apply());
+        }
+
         buttonClear.setOnClickListener(v -> textViewMessages.setText(""));
+        View.OnClickListener closeClick = v -> exitBridgeUi();
+        if (buttonClose != null) {
+            buttonClose.setOnClickListener(closeClick);
+        }
+        if (buttonCloseBottom != null) {
+            buttonCloseBottom.setOnClickListener(closeClick);
+        }
 
         tts = new TextToSpeech(this, this);
         
@@ -306,6 +376,40 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 }
             }
         });
+
+        maybeAutoConnect();
+    }
+
+    private String readBrokerPort() {
+        if (editTextPort == null) {
+            return "1883";
+        }
+        String port = editTextPort.getText().toString().trim();
+        return port.isEmpty() ? "1883" : port;
+    }
+
+    private void applyBrokerPortToHandler() {
+        if (mqttHandler == null) {
+            return;
+        }
+        mqttHandler.setBrokerPort(readBrokerPort());
+    }
+
+    /** Connect automatically when a saved broker IP exists and the checkbox is on. */
+    private void maybeAutoConnect() {
+        if (checkBoxAutoConnect == null || !checkBoxAutoConnect.isChecked()) {
+            return;
+        }
+        String ip = editTextIp.getText().toString().trim();
+        if (ip.isEmpty() || connected || mqttHandler == null) {
+            return;
+        }
+        mqttHandler.setBrokerIp(ip);
+        applyBrokerPortToHandler();
+        mqttHandler.connect();
+        buttonConnect.setEnabled(false);
+        buttonConnect.setText("Conectando...");
+        appendMessage("Auto-connecting to broker...");
     }
 
     @Override
@@ -330,6 +434,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         systemManager = (SystemManager) getUnitManager(FuncConstant.SYSTEM_MANAGER);
         wheelMotionManager = (WheelMotionManager) getUnitManager(FuncConstant.WHEELMOTION_MANAGER);
         headMotionManager = (HeadMotionManager) getUnitManager(FuncConstant.HEADMOTION_MANAGER);
+        handMotionManager = (HandMotionManager) getUnitManager(FuncConstant.HANDMOTION_MANAGER);
+        modularMotionManager = (ModularMotionManager) getUnitManager(FuncConstant.MODULARMOTION_MANAGER);
         speechManager = (SpeechManager) getUnitManager(FuncConstant.SPEECH_MANAGER);
         startBatteryPublishingLoop();
         startInfoPublishingLoop();
@@ -418,7 +524,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             public void onObstacleStatus(boolean status) {
                 try{
                     JSONObject json = new JSONObject();
-                    json.put("status", 1);
+                    // Must publish the real flag — hard-coding 1 stuck My Sanbot on BLOCKED forever.
+                    json.put("status", status ? 1 : 0);
                     mqttHandler.publishMessage(getPrefixedTopic("obstacle"), json.toString());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -429,6 +536,11 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         hardWareManager.setOnHareWareListener(new GyroscopeListener() {
             @Override
             public void gyroscopeData(float x, float y, float z) {
+                long now = System.currentTimeMillis();
+                if (now - lastImuPublishMs < IMU_UPDATE_INTERVAL_MS) {
+                    return;
+                }
+                lastImuPublishMs = now;
                 try {
                     JSONObject gyroJson = new JSONObject();
                     gyroJson.put("x", x);
@@ -528,11 +640,14 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         final String finalTopic = topic;
         final String finalMessage = message;
 
-        runOnUiThread(() -> {
-            if ("All".equals(selectedTopic) || selectedTopic.equals(finalTopic)) {
-                appendMessage("[" + finalTopic + "]: " + finalMessage);
-            }
-        });
+        // Never mirror high-rate telemetry into the on-screen log (ANR risk).
+        if (!isTelemetryTopic(finalTopic)) {
+            runOnUiThread(() -> {
+                if ("All".equals(selectedTopic) || selectedTopic.equals(finalTopic)) {
+                    appendMessage("[" + finalTopic + "]: " + finalMessage);
+                }
+            });
+        }
 
         if (getPrefixedTopic("light").equals(topic)) {
             handleLightControl(message);
@@ -542,15 +657,23 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             handleJointMotion(message);
         } else if (getPrefixedTopic("led").equals(topic)) {
             handleLedControl(message);
+        } else if (getPrefixedTopic("emotion").equals(topic)) {
+            handleEmotionControl(message);
+        } else if (getPrefixedTopic("autonomy").equals(topic)) {
+            handleAutonomyControl(message);
+        } else if (getPrefixedTopic("system").equals(topic)) {
+            handleSystemControl(message);
         } else if (getPrefixedTopic("speak").equals(topic)) {
             try {
                 JSONObject json = new JSONObject(message);
                 String texto = json.optString("msg", "");
                 if (!texto.isEmpty()) {
+                    int speed = json.optInt("speed", 50);
+                    int volume = json.optInt("volume", 70);
                     if (switchTtsType.isChecked()) {
-                        handleSpeakSDK(texto);
+                        handleSpeakSDK(texto, speed, volume);
                     } else {
-                        handleSpeakAndroid(texto);
+                        handleSpeakAndroid(texto, speed, volume);
                     }
                 }
             } catch (Exception e) {
@@ -686,26 +809,42 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private void handleJointMotion(String message) {
         try {
             JSONObject json = new JSONObject(message);
-            String joint = json.optString("joint"); // "head_pan", "head_tilt", "wing_left", "wing_right"
-            int angle = json.optInt("angle"); // ângulo padrão
-            int speed = json.optInt("speed", 50); // velocidade padrão
+            String joint = json.optString("joint"); // "head_pan", "head_tilt", "wing_left", "wing_right", "wing_both"
+            int angle = json.optInt("angle");
+            int speed = json.optInt("speed", 50);
+            String action = json.optString("action", "").trim().toLowerCase(Locale.US);
+            boolean hasAngle = json.has("angle");
 
             AbsoluteAngleHeadMotion absoluteAngleHeadMotion;
 
             switch (joint) {
                 case "head_pan":
-                    absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_HORIZONTAL, AbsoluteAngleHeadMotion.ACTION_START, speed, angle);
+                    // Nano MainService AbsoluteAngleHeadMotion: action=1 vertical, action=2 horizontal.
+                    // Stock dsdk puts axis in direction and ACTION_START in action — MainService
+                    // ignores direction, so ACTION_START=1 made every pan a vertical move.
+                    absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(
+                            AbsoluteAngleHeadMotion.DIRECTION_HEAD_HORIZONTAL,
+                            (byte) 2,
+                            speed,
+                            angle);
                     headMotionManager.doAbsoluteAngleMotion(absoluteAngleHeadMotion);
                     break;
                 case "head_tilt":
-                    absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(AbsoluteAngleHeadMotion.DIRECTION_HEAD_VERTICAL, AbsoluteAngleHeadMotion.ACTION_START, speed, angle);
+                    absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(
+                            AbsoluteAngleHeadMotion.DIRECTION_HEAD_VERTICAL,
+                            AbsoluteAngleHeadMotion.ACTION_START,
+                            speed,
+                            angle);
                     headMotionManager.doAbsoluteAngleMotion(absoluteAngleHeadMotion);
                     break;
                 case "wing_left":
-                    // TODO
+                    handleWingMotion(CombinationHandMotion.PART_LEFT, angle, action, speed, hasAngle);
                     break;
                 case "wing_right":
-                    // TODO
+                    handleWingMotion(CombinationHandMotion.PART_RIGHT, angle, action, speed, hasAngle);
+                    break;
+                case "wing_both":
+                    handleWingMotion(CombinationHandMotion.PART_BOTH, angle, action, speed, hasAngle);
                     break;
                 default:
                     break;
@@ -713,6 +852,362 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Wings / arms for Nano MainService (alexa_release).
+     * Discrete up/down/stop use HAND_MOTION_NO_ANGLE (545). Absolute 547 when angle is set.
+     * CombinationHandMotion (4374) is ACK'd but never reaches the MCU on this firmware.
+     * Keep robot_arm_action=true in settings.
+     */
+    private void handleWingMotion(byte part, int angle, String action, int speed, boolean hasAngle) {
+        if (handMotionManager == null) {
+            appendMessage("wing skipped: HandMotionManager null");
+            return;
+        }
+        writeQihanSettingInt("robot_arm_action", 1);
+        int clampedSpeed = Math.max(1, Math.min(100, speed));
+        String resolved = action == null ? "" : action.trim().toLowerCase(Locale.US);
+        try {
+            if (resolved.isEmpty() && hasAngle) {
+                sendHandAbsolute(part, clampedSpeed, Math.max(0, Math.min(270, angle)));
+                appendMessage("wing absolute part=" + part + " angle=" + angle);
+                return;
+            }
+            if (resolved.isEmpty()) {
+                resolved = angle >= 135 ? "up" : "down";
+            }
+            switch (resolved) {
+                case "up":
+                case "raise":
+                case "wave":
+                    sendHandNoAngle(part, clampedSpeed, (byte) 1 /* ACTION_UP */);
+                    appendMessage("wing up part=" + part + " via 545");
+                    break;
+                case "down":
+                case "drop":
+                    sendHandNoAngle(part, clampedSpeed, (byte) 2 /* ACTION_DOWN */);
+                    appendMessage("wing down part=" + part + " via 545");
+                    break;
+                case "reset":
+                    try {
+                        handMotionManager.doResetMotion();
+                    } catch (Exception ignored) {
+                        sendHandNoAngle(part, clampedSpeed, (byte) 2);
+                        sendHandAbsolute(part, clampedSpeed, 0);
+                    }
+                    appendMessage("wing reset");
+                    break;
+                case "stop":
+                    try {
+                        handMotionManager.doStopMotion();
+                    } catch (Exception ignored) {
+                        sendHandNoAngle(part, clampedSpeed, (byte) 0 /* ACTION_STOP */);
+                    }
+                    appendMessage("wing stop");
+                    break;
+                default:
+                    appendMessage("Unknown wing action: " + resolved);
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e("MQTT", "wing send failed", e);
+            appendMessage("wing failed: " + e.getMessage());
+        }
+    }
+
+    private void sendHandNoAngle(byte part, int speed, byte action) throws Exception {
+        // Prefer SDK bean + private doNoAngleMotion (correct Gson shape for this dsdk).
+        try {
+            NoAngleHandMotion motion = new NoAngleHandMotion(
+                    part,
+                    NoAngleHandMotion.DIRECTION_SHOULDER_FRONT_BACK,
+                    action,
+                    speed);
+            invokeHandMotion(handMotionManager, "doNoAngleMotion", NoAngleHandMotion.class, motion);
+            Log.i("MQTT", "wing NoAngle via SDK part=" + part + " action=" + action);
+            return;
+        } catch (Exception e) {
+            Log.w("MQTT", "doNoAngleMotion reflect failed, raw Order 545: " + e.getMessage());
+        }
+        JSONObject content = new JSONObject();
+        content.put("part", part);
+        content.put("direction", 1);
+        content.put("speed", speed);
+        content.put("action", action & 0xff);
+        content.put("mode", 1);
+        sendHandOrder(545, content.toString());
+    }
+
+    private void sendHandAbsolute(byte part, int speed, int degrees) throws Exception {
+        int deg = Math.max(0, Math.min(270, degrees));
+        try {
+            AbsoluteAngleHandMotion motion = new AbsoluteAngleHandMotion(
+                    part,
+                    AbsoluteAngleHandMotion.DIRECTION_SHOULDER_FRONT_BACK,
+                    AbsoluteAngleHandMotion.ACTION_START,
+                    speed,
+                    deg);
+            invokeHandMotion(handMotionManager, "doAbsoluteAngleMotion", AbsoluteAngleHandMotion.class, motion);
+            Log.i("MQTT", "wing Absolute via SDK part=" + part + " deg=" + deg);
+            return;
+        } catch (Exception e) {
+            Log.w("MQTT", "doAbsoluteAngleMotion reflect failed, raw Order 547: " + e.getMessage());
+        }
+        JSONObject content = new JSONObject();
+        content.put("part", part);
+        content.put("direction", 1);
+        content.put("action", 1);
+        content.put("speed", speed);
+        content.put("lsbAngle", deg & 0xff);
+        content.put("msbAngle", (deg >> 8) & 0xff);
+        content.put("mode", 3);
+        sendHandOrder(547, content.toString());
+    }
+
+    private void invokeHandMotion(HandMotionManager hand, String methodName, Class<?> argType, Object arg)
+            throws Exception {
+        Method m = hand.getClass().getDeclaredMethod(methodName, argType);
+        m.setAccessible(true);
+        m.invoke(hand, arg);
+    }
+
+    private void sendHandOrder(int cmd, String content) throws Exception {
+        BindBaseInterface listener = resolveHandListener(handMotionManager);
+        if (listener == null) {
+            throw new IllegalStateException("HandMotionManager listener unavailable");
+        }
+        listener.sendCommandToMainService(new Order(cmd, 0, content), null);
+        Log.i("MQTT", "wing Order cmd=" + cmd + " " + content);
+    }
+
+    private BindBaseInterface resolveHandListener(HandMotionManager hand) {
+        if (hand == null) {
+            return null;
+        }
+        String[] names = {
+                "getListener$dsdk_NormalRelease",
+                "getListener$opensdk_NormalRelease",
+                "getListener"
+        };
+        for (String name : names) {
+            try {
+                Method m = hand.getClass().getMethod(name);
+                Object result = m.invoke(hand);
+                if (result instanceof BindBaseInterface) {
+                    return (BindBaseInterface) result;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        try {
+            java.lang.reflect.Field f = hand.getClass().getDeclaredField("listener");
+            f.setAccessible(true);
+            Object result = f.get(hand);
+            if (result instanceof BindBaseInterface) {
+                return (BindBaseInterface) result;
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /** Best-effort Qihan settings provider write (e.g. robot_arm_action). */
+    private void writeQihanSettingInt(String key, int value) {
+        try {
+            android.net.Uri uri = android.net.Uri.parse(
+                    "content://com.qihancloud.setting.Provider/setting");
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put("key", key);
+            values.put("value", String.valueOf(value));
+            int updated = getContentResolver().update(uri, values, "key=?", new String[]{key});
+            if (updated <= 0) {
+                getContentResolver().insert(uri, values);
+            }
+        } catch (Exception e) {
+            Log.w("SanbotRosBridge", "writeQihanSettingInt " + key + " failed", e);
+        }
+    }
+
+    /**
+     * Face emotion. MQTT /emotion: {"emotion":"smile"} (case-insensitive; aliases: laugh→LAUGHTER).
+     * Visible on the robot face screen (not while this bridge UI is foreground).
+     */
+    private void handleEmotionControl(String message) {
+        try {
+            if (systemManager == null) {
+                return;
+            }
+            JSONObject json = new JSONObject(message);
+            String raw = json.optString("emotion", json.optString("name", "")).trim();
+            if (raw.isEmpty()) {
+                return;
+            }
+            EmotionsType emotion = resolveEmotion(raw);
+            if (emotion != null) {
+                systemManager.showEmotion(emotion);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private EmotionsType resolveEmotion(String raw) {
+        String key = raw.trim().toUpperCase().replace('-', '_').replace(' ', '_');
+        switch (key) {
+            case "LAUGH":
+            case "LAUGHING":
+                key = "LAUGHTER";
+                break;
+            case "HAPPY":
+                key = "SMILE";
+                break;
+            case "PRAISE":
+            case "PRISE":
+                key = "PRISE";
+                break;
+            default:
+                break;
+        }
+        try {
+            return EmotionsType.valueOf(key);
+        } catch (IllegalArgumentException e) {
+            Log.w("MQTT", "Unknown emotion: " + raw);
+            return null;
+        }
+    }
+
+    /**
+     * Autonomy helpers. MQTT /autonomy:
+     * {"mode":"charge|wander|follow","enabled":true}
+     * Follow speech mute (HumanFollow): {"mode":"follow","speech_feedback":false}
+     * Combined: {"mode":"follow","enabled":true,"speech_feedback":true}
+     */
+    private void handleAutonomyControl(String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            String mode = json.optString("mode", "").trim().toLowerCase();
+            boolean hasEnabled = json.has("enabled");
+            boolean enabled = json.optBoolean("enabled", true);
+            boolean hasSpeech = json.has("speech_feedback") || json.has("speech");
+            boolean speechFeedback = json.has("speech_feedback")
+                    ? json.optBoolean("speech_feedback", true)
+                    : json.optBoolean("speech", true);
+            switch (mode) {
+                case "charge":
+                case "auto_charge":
+                case "dock":
+                    if (hasEnabled && modularMotionManager != null) {
+                        modularMotionManager.switchCharge(enabled);
+                    }
+                    break;
+                case "wander":
+                    if (hasEnabled && modularMotionManager != null) {
+                        modularMotionManager.switchWander(enabled);
+                    }
+                    break;
+                case "follow":
+                    // HumanFollow owns chase. Do NOT call switchFollow(true): MainService
+                    // re-launches without follow=true (preview-only) and arms onboard cruise
+                    // that looks like wander. Only clear the flag on off.
+                    if (hasEnabled || hasSpeech) {
+                        notifyHumanFollow(
+                                hasEnabled ? Boolean.valueOf(enabled) : null,
+                                hasSpeech ? Boolean.valueOf(speechFeedback) : null);
+                    }
+                    if (hasEnabled && !enabled && modularMotionManager != null) {
+                        modularMotionManager.switchFollow(false);
+                    }
+                    break;
+                default:
+                    Log.w("MQTT", "Unknown autonomy mode: " + mode);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Device helpers. MQTT /system:
+     * {"action":"reboot"}  (alias: "restart")
+     */
+    private void handleSystemControl(String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            String action = json.optString("action", json.optString("cmd", "")).trim().toLowerCase();
+            if ("reboot".equals(action) || "restart".equals(action)) {
+                appendMessage("MQTT: rebooting robot…");
+                Log.i("MQTT", "system reboot requested");
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(800L);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
+                    requestDeviceReboot();
+                }, "mqtt-reboot").start();
+            } else {
+                Log.w("MQTT", "Unknown system action: " + action);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void requestDeviceReboot() {
+        try {
+            android.os.PowerManager pm =
+                    (android.os.PowerManager) getSystemService(POWER_SERVICE);
+            if (pm != null) {
+                pm.reboot(null);
+                return;
+            }
+        } catch (Throwable t) {
+            Log.w("MQTT", "PowerManager.reboot unavailable", t);
+        }
+        try {
+            Runtime.getRuntime().exec(new String[]{"/system/bin/reboot"});
+        } catch (Exception e) {
+            Log.e("MQTT", "/system/bin/reboot failed", e);
+            try {
+                Runtime.getRuntime().exec(new String[]{"reboot"});
+            } catch (Exception e2) {
+                Log.e("MQTT", "reboot failed", e2);
+            }
+        }
+    }
+
+    /**
+     * Launch / update {@code com.qihan.HumanFollow}. Pass null to leave follow or speech unchanged.
+     */
+    private void notifyHumanFollow(Boolean followEnabled, Boolean speechFeedback) {
+        runOnUiThread(() -> {
+            try {
+                Log.i("MQTT", "notify HumanFollow follow=" + followEnabled
+                        + " speech=" + speechFeedback);
+                if (followEnabled != null) {
+                    android.content.Intent followBroadcast = new android.content.Intent(
+                            "com.qihan.HumanFollow.SET_FOLLOWING");
+                    followBroadcast.setPackage("com.qihan.HumanFollow");
+                    followBroadcast.putExtra("enabled", followEnabled.booleanValue());
+                    followBroadcast.putExtra("follow", followEnabled.booleanValue());
+                    if (speechFeedback != null) {
+                        followBroadcast.putExtra("speech_feedback",
+                                speechFeedback.booleanValue());
+                    }
+                    sendBroadcast(followBroadcast);
+                } else if (speechFeedback != null) {
+                    android.content.Intent broadcast = new android.content.Intent(
+                            "com.qihan.HumanFollow.SET_SPEECH_FEEDBACK");
+                    broadcast.setPackage("com.qihan.HumanFollow");
+                    broadcast.putExtra("speech_feedback", speechFeedback.booleanValue());
+                    sendBroadcast(broadcast);
+                }
+            } catch (Exception launchEx) {
+                Log.w("MQTT", "HumanFollow notify failed", launchEx);
+            }
+        });
     }
 
     private void handleLedControl(String message) {
@@ -765,23 +1260,31 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         }
     }
 
-    private void handleSpeakAndroid(String texto) {
+    private void handleSpeakAndroid(String texto, int speed, int volume) {
         if (tts != null) {
             tts.stop();
-            tts.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "mqtt_speak");
+            // Android TTS rate ~0.5–2.0; map MQTT speed 0–100 around 1.0
+            float rate = 0.5f + (Math.max(0, Math.min(100, speed)) / 100f);
+            tts.setSpeechRate(rate);
+            // STREAM_MUSIC volume 0–1
+            float gain = Math.max(0, Math.min(100, volume)) / 100f;
+            android.os.Bundle params = new android.os.Bundle();
+            params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, gain);
+            tts.speak(texto, TextToSpeech.QUEUE_FLUSH, params, "mqtt_speak");
         }
     }
 
-    private void handleSpeakSDK(String texto){
+    private void handleSpeakSDK(String texto, int speed, int volume) {
         if (speechManager != null) {
             SpeakOption speakOption = new SpeakOption();
-            
+
             // Obtém o idioma selecionado no spinner
             String selectedLanguage = spinnerLanguage.getSelectedItem().toString();
             speakOption.setLanguageType(getSdkLanguageType(selectedLanguage));
-            
-            speakOption.setSpeed(50);      // Velocidade de fala (0 a 100)
-            speakOption.setIntonation(50); // Entonação (0 a 100)
+
+            speakOption.setSpeed(Math.max(0, Math.min(100, speed)));
+            speakOption.setIntonation(50);
+            // volume is applied for Android TTS; SDK SpeakOption keeps speed/intonation here
             speechManager.stopSpeak();
             speechManager.startSpeak(texto, speakOption);
         }
@@ -791,7 +1294,11 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     public void onTopicsUpdated(java.util.List<String> topics) {}
 
     private void subscribeToAllTopics() {
-        String[] suffixes = new String[]{"light", "move", "joints", "led", "speak", "ir", "battery", "touch", "pir", "voice_angle", "info", "obstacle", "imu", "speech"};
+        // Commands only — do not subscribe to outbound telemetry (ir/imu/battery/…).
+        // Subscribing + Show Logs caused unbounded TextView growth and ANRs.
+        String[] suffixes = new String[]{
+                "light", "move", "joints", "led", "speak", "emotion", "autonomy", "system"
+        };
         java.util.List<String> spinnerItems = new java.util.ArrayList<>();
         spinnerItems.add("All");
 
@@ -806,10 +1313,29 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         spinnerTopics.setAdapter(adapter);
     }
 
+    private boolean isTelemetryTopic(String topic) {
+        if (topic == null) return false;
+        return topic.equals(getPrefixedTopic("ir"))
+                || topic.equals(getPrefixedTopic("imu"))
+                || topic.equals(getPrefixedTopic("battery"))
+                || topic.equals(getPrefixedTopic("info"))
+                || topic.equals(getPrefixedTopic("touch"))
+                || topic.equals(getPrefixedTopic("pir"))
+                || topic.equals(getPrefixedTopic("voice_angle"))
+                || topic.equals(getPrefixedTopic("obstacle"))
+                || topic.equals(getPrefixedTopic("speech"));
+    }
+
     private void appendMessage(String msg) {
-        if (checkBoxShowLogs != null && checkBoxShowLogs.isChecked()) {
+        if (checkBoxShowLogs != null && checkBoxShowLogs.isChecked() && textViewMessages != null) {
             textViewMessages.append(msg + "\n");
-            scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+            CharSequence text = textViewMessages.getText();
+            if (text != null && text.length() > MAX_LOG_CHARS) {
+                textViewMessages.setText(text.subSequence(text.length() - MAX_LOG_CHARS, text.length()));
+            }
+            if (scrollView != null) {
+                scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+            }
         }
     }
 
@@ -863,6 +1389,21 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 appendMessage("❌ Required permissions denied. RTMP streaming will not work.");
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Nano has no nav bar; Close / Back dismisses the UI without killing MQTT.
+        exitBridgeUi();
+    }
+
+    /**
+     * Leave the config screen (boot / auto-open). Keeps the process (and MQTT) alive
+     * via {@link #moveTaskToBack(boolean)} instead of {@link #finish()}.
+     */
+    private void exitBridgeUi() {
+        Log.i("SanbotRosBridge", "Close — move bridge UI to background");
+        moveTaskToBack(true);
     }
 
     @Override
@@ -926,6 +1467,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                         json.put("main_service_version", systemManager.getMainServiceVersion());
                         json.put("android_version", android.os.Build.VERSION.RELEASE);
                         json.put("device_model", android.os.Build.MODEL);
+                        putVolumeTelemetry(json);
 
                         mqttHandler.publishMessage(getPrefixedTopic("info"), json.toString());
                     } catch (Exception e) {
@@ -936,6 +1478,60 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
                 publishHandler.postDelayed(this, 5000); // repete a cada 5 segundos
             }
         }, 5000);
+    }
+
+    /** Android media/system levels + Qihan speak volume for My Sanbot Robot Info. */
+    private void putVolumeTelemetry(JSONObject json) {
+        try {
+            android.media.AudioManager am =
+                    (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
+            if (am != null) {
+                int musicMax = Math.max(1, am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC));
+                int music = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
+                int systemMax = Math.max(1, am.getStreamMaxVolume(android.media.AudioManager.STREAM_SYSTEM));
+                int system = am.getStreamVolume(android.media.AudioManager.STREAM_SYSTEM);
+                json.put("volume_music", music);
+                json.put("volume_music_max", musicMax);
+                json.put("volume_music_pct", (music * 100) / musicMax);
+                json.put("volume_system", system);
+                json.put("volume_system_max", systemMax);
+                json.put("volume_system_pct", (system * 100) / systemMax);
+            }
+            int mute = android.provider.Settings.System.getInt(
+                    getContentResolver(), "volume_master_mute", 0);
+            json.put("master_mute", mute != 0);
+            Integer speakVol = readQihanSettingInt("robot_speak_volume");
+            if (speakVol != null) {
+                json.put("robot_speak_volume", speakVol);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Integer readQihanSettingInt(String key) {
+        android.database.Cursor cursor = null;
+        try {
+            android.net.Uri uri = android.net.Uri.parse(
+                    "content://com.qihancloud.setting.Provider/setting");
+            cursor = getContentResolver().query(
+                    uri, new String[]{"key", "value"}, "key=?", new String[]{key}, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex("value");
+                if (idx >= 0) {
+                    String raw = cursor.getString(idx);
+                    if (raw != null && !raw.isEmpty()) {
+                        return Integer.parseInt(raw.trim());
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
     }
 
     private void publishSpeechToMqtt(String texto) {

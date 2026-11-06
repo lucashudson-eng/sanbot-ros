@@ -1,6 +1,8 @@
 package com.grin.sanbotrosbridge;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -23,10 +25,13 @@ public class MqttHandler {
     private MqttAsyncClient mqttClient;
     private Context context;
     private String brokerIp = "192.168.0.101";
+    private String brokerPort = "1883";
     private boolean isConnected = false;
     private List<String> topicList;
     private List<String> subscribedTopics = new ArrayList<>();
     private MqttStatusListener statusListener;
+    private final HandlerThread publishThread;
+    private final Handler publishHandler;
 
     public interface MqttStatusListener {
         void onConnectionStatusChanged(boolean connected);
@@ -37,6 +42,9 @@ public class MqttHandler {
     public MqttHandler(Context context, MqttStatusListener listener) {
         this.context = context;
         this.statusListener = listener;
+        this.publishThread = new HandlerThread("mqtt-publish");
+        this.publishThread.start();
+        this.publishHandler = new Handler(publishThread.getLooper());
         setupTopics();
     }
 
@@ -59,6 +67,14 @@ public class MqttHandler {
         this.brokerIp = ip;
     }
 
+    public void setBrokerPort(String port) {
+        if (port == null || port.trim().isEmpty()) {
+            this.brokerPort = "1883";
+        } else {
+            this.brokerPort = port.trim();
+        }
+    }
+
     public boolean isConnected() {
         return isConnected;
     }
@@ -78,7 +94,8 @@ public class MqttHandler {
 
         // Criar identificador de cliente único
         String clientId = "AndroidClient-" + UUID.randomUUID().toString();
-        String serverUri = "tcp://" + brokerIp + ":1883";
+        String port = (brokerPort == null || brokerPort.isEmpty()) ? "1883" : brokerPort;
+        String serverUri = "tcp://" + brokerIp + ":" + port;
 
         try {
             // Se existe uma conexão anterior, desconectar
@@ -104,7 +121,7 @@ public class MqttHandler {
                 public void messageArrived(String topic, MqttMessage message) {
                     try {
                         String payload = new String(message.getPayload());
-                        Log.d(TAG, "Mensagem MQTT recebida [" + topic + "]: " + payload);
+                        // No per-message Log.d — CheckJNI log spam ANRs the Nano UI thread.
                         if (statusListener != null) {
                             statusListener.onMessageReceived(topic, payload);
                         }
@@ -115,7 +132,7 @@ public class MqttHandler {
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-                    Log.d(TAG, "Entrega da mensagem MQTT completa");
+                    // Intentionally quiet — high-rate telemetry would flood logcat.
                 }
             });
 
@@ -201,22 +218,29 @@ public class MqttHandler {
     }
 
     public void publishMessage(String topic, String message) {
-        if (mqttClient == null || !mqttClient.isConnected()) {
-            Log.e(TAG, "Não é possível publicar: cliente MQTT não conectado");
+        if (topic == null || message == null) {
             return;
         }
-
-        try {
-            MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-            mqttMessage.setQos(0);
-            mqttClient.publish(topic, mqttMessage);
-            Log.d(TAG, "Mensagem publicada no tópico: " + topic);
-        } catch (MqttException e) {
-            Log.e(TAG, "Erro ao publicar mensagem: " + e.getMessage(), e);
-        }
+        // Always hop off the caller (often OpenSDK main-thread sensor callbacks).
+        final String publishTopic = topic;
+        final String publishPayload = message;
+        publishHandler.post(() -> {
+            MqttAsyncClient client = mqttClient;
+            if (client == null || !client.isConnected()) {
+                return;
+            }
+            try {
+                MqttMessage mqttMessage = new MqttMessage(publishPayload.getBytes());
+                mqttMessage.setQos(0);
+                client.publish(publishTopic, mqttMessage);
+            } catch (MqttException e) {
+                Log.e(TAG, "Erro ao publicar mensagem: " + e.getMessage());
+            }
+        });
     }
 
     public void disconnect() {
+        publishHandler.removeCallbacksAndMessages(null);
         if (mqttClient != null && mqttClient.isConnected()) {
             try {
                 mqttClient.disconnect();

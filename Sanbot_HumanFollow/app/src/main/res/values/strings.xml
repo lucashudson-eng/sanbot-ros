@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Human Follow</string>
+    <string name="btn_detect">Detect Human</string>
+    <string name="btn_start_follow">Start follow</string>
+    <string name="btn_stop">Stop</string>
+    <string name="btn_close">Close</string>
+    <string name="status_idle">Idle — Detect Human, Start follow, or MQTT</string>
+    <string name="status_detecting">Detect test — no driving</string>
+    <string name="status_human_seen">Human detected</string>
+    <string name="status_no_human">No human in view</string>
+    <string name="status_following">Following — good distance</string>
+    <string name="status_too_close">Too close — step back</string>
+    <string name="status_too_far">Too far — come closer</string>
+    <string name="status_range_ok">Good distance</string>
+    <string name="status_searching">Searching for person…</string>
+    <string name="status_obstacle">Stopped — obstacle / IR</string>
+    <string name="status_hand_stop">Hand up — follow stopped</string>
+    <string name="status_hand_start">Hand up — follow started</string>
+    <string name="speak_hand_stop">Follow stopped</string>
+    <string name="speak_hand_start">Following you</string>
+    <string name="speak_human_seen">Human detected</string>
+    <string name="speak_no_human">No human</string>
+    <string name="speak_detect_on">Detect on</string>
+    <string name="speak_detect_off">Detect off</string>
+    <string name="speak_too_close">Too close</string>
+    <string name="speak_too_far">Too far</string>
+    <string name="speak_good_distance">Good distance</string>
+    <string name="speak_searching">Searching</string>
+    <string name="speak_obstacle">Obstacle</string>
+    <string name="speak_idle">Follow off</string>
+    <string name="speech_on">Speech on</string>
+    <string name="speech_off">Speech off</string>
+    <string name="google_tts_on">Google TTS</string>
+    <string name="google_asr_on">Google ASR</string>
+    <string name="pin_home">Add to Home</string>
+    <string name="speak_voice_unknown">Sorry, say follow me or stop follow</string>
+    <string name="status_listening">Listening…</string>
+    <string name="hint">Detect Human = boxes only (no drive). Voice: “follow me”, “stop follow”, “speech on/off”. Hand up starts/stops follow. Google TTS/ASR bypass Qihan cloud (default on).</string>
+</resources>
