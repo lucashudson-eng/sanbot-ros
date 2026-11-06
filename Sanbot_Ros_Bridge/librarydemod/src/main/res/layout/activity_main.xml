@@ -1,78 +1,279 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Bezel-safe padding for Sanbot Nano; MQTT config + two-column Options. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:padding="16dp">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="28dp"
+    android:paddingRight="28dp"
+    android:paddingBottom="12dp"
+    android:paddingTop="36dp">
 
-    <EditText
-        android:id="@+id/editTextName"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Namespace" />
+        android:paddingBottom="6dp">
 
-    <EditText
-        android:id="@+id/editTextIp"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="MQTT Configuration"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FF222222" />
+
+            <TextView
+                android:id="@+id/textViewVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textColor="#FF666666"
+                android:textSize="11sp"
+                android:text="—" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/buttonClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Close"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:hint="Server IP"
-        android:inputType="textUri" />
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Namespace:"
+            android:textSize="14sp"
+            android:textColor="#FF222222"
+            android:paddingEnd="4dp" />
+
+        <EditText
+            android:id="@+id/editTextName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="(optional)"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="IP Address:"
+            android:textSize="14sp"
+            android:textColor="#FF222222"
+            android:paddingStart="8dp"
+            android:paddingEnd="4dp" />
+
+        <EditText
+            android:id="@+id/editTextIp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.4"
+            android:hint="192.168.x.x"
+            android:inputType="textUri"
+            android:singleLine="true"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Port:"
+            android:textSize="14sp"
+            android:textColor="#FF222222"
+            android:paddingStart="8dp"
+            android:paddingEnd="4dp" />
+
+        <EditText
+            android:id="@+id/editTextPort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.55"
+            android:text="1883"
+            android:hint="1883"
+            android:inputType="number"
+            android:singleLine="true"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/buttonConnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp"
         android:text="Connect"
-        android:layout_marginTop="8dp" />
+        android:textSize="16sp" />
 
-    <Switch
-        android:id="@+id/switchRtmp"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="RTMP ON/OFF"/>
+        android:layout_marginTop="10dp"
+        android:text="Options"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#FF222222"
+        android:paddingBottom="4dp" />
 
-    <Switch
-        android:id="@+id/switchTtsType"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="TTS Android (SDK unchecked)" />
+        android:baselineAligned="false">
 
-    <Spinner
-        android:id="@+id/spinnerLanguage"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp">
+
+            <CheckBox
+                android:id="@+id/checkBoxAutoConnect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Auto-connect on launch"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/checkBoxAutoLaunch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Auto-launch on boot"
+                android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/switchRtmp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="RTMP ON/OFF"
+                android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/switchWsControl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:checked="true"
+                android:text="WS control :8080"
+                android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/switchTtsType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="TTS Android (SDK unchecked)"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Language"
+                android:textSize="13sp"
+                android:textColor="#FF444444" />
+
+            <Spinner
+                android:id="@+id/spinnerLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/language_array" />
+
+            <CheckBox
+                android:id="@+id/checkBoxShowLogs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:checked="false"
+                android:text="Show Logs"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Suggested: leave off for normal use (can make the app unresponsive). On-screen log is capped (~8k chars)."
+                android:textSize="11sp"
+                android:textColor="#FF666666" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Log filter"
+                android:textSize="13sp"
+                android:textColor="#FF444444" />
+
+            <Spinner
+                android:id="@+id/spinnerTopics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/topics_array" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:entries="@array/language_array" />
+        android:layout_marginTop="8dp">
 
-    <CheckBox
-        android:id="@+id/checkBoxShowLogs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Show Logs"
-        android:checked="true" />
+        <Button
+            android:id="@+id/buttonClear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:text="Clear Logs"
+            android:textSize="16sp" />
 
-    <Spinner
-        android:id="@+id/spinnerTopics"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:entries="@array/topics_array" />
-
-    <Button
-        android:id="@+id/buttonClear"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Clear Logs"
-        android:layout_marginTop="8dp" />
+        <Button
+            android:id="@+id/buttonCloseBottom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:text="Close"
+            android:textSize="16sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="8dp">
 
         <ScrollView
             android:id="@+id/scrollView"
@@ -86,7 +287,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textIsSelectable="true" />
+                android:textIsSelectable="true"
+                android:textSize="13sp" />
         </ScrollView>
 
         <SurfaceView
@@ -95,6 +297,5 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:visibility="gone" />
-
     </LinearLayout>
 </LinearLayout>

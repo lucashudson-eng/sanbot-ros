@@ -124,9 +124,14 @@ roslaunch sanbot_ros app_bridge.launch
      ```bash
      hostname -I | awk '{print $1}'
      ```
-   * In the app top field, enter this IP in **Server IP**.
-   * Tap **Connect** to establish the MQTT link.
-   * Enable the RTMP camera stream by toggling the **Camera** switch.
+   * In **MQTT Configuration**, set **IP Address** (and **Port** if not `1883`). **Namespace** is optional (empty → topics like `/battery`; `nano` → `/nano/battery`).
+   * Tap **Connect**. Optionally leave **Auto-connect on launch** / **Auto-launch on boot** enabled so the app reconnects after reboot.
+   * **Close** (top or bottom) or Back dismisses the screen without disconnecting MQTT (Nano has no nav bar). HUD shows **`v{versionName} ({versionCode})`** — current **`v1.1.0 (2)`**.
+   * Enable the RTMP camera stream with **RTMP ON/OFF**.
+
+![MQTT Configuration UI on Sanbot Nano](assets/mqtt-configuration-new-features.jpg)
+
+*MQTT Configuration (Namespace / IP / Port), Auto-connect, Auto-launch, and two-column Options on the Nano head screen.*
 
 4. In a ROS terminal you should see topics appearing, e.g.:
 
@@ -150,12 +155,14 @@ Below is a quick reference of the MQTT topics and RTMP transmission to understoo
 | `ros/joints` | Head & wing servos | `{ "joint": string, "angle": int°?, "speed": int%?, "action": string? }` | `{ "joint": "wing_left", "action": "up", "speed": 50 }` |
 | `ros/emotion` | Face expression | `{ "emotion": string }` | `{ "emotion": "smile" }` |
 | `ros/autonomy` | Dock / wander / follow | `{ "mode": string, "enabled": bool }` | `{ "mode": "wander", "enabled": true }` |
-| `ros/speak` | Text-to-Speech | `{ "msg": string }` | `{ "msg": "Hello, I am Sanbot" }` |
+| `ros/speak` | Text-to-Speech | `{ "msg": string, "speed": 0-100?, "volume": 0-100? }` | `{ "msg": "Hello, I am Sanbot", "speed": 30, "volume": 70 }` |
 
 Notes
 * Optional fields may be omitted.
 * Angles are integers in **degrees**; speeds are percentages `0-100`.
 * Nano MainService quirks, emotion visibility, and `/autonomy` live test status (wander tested; dock/charge not physically tested; follow uses in-repo [`Sanbot_HumanFollow/`](../Sanbot_HumanFollow/)): see [docs/MQTT_CONTROL_ENHANCEMENTS.md](docs/MQTT_CONTROL_ENHANCEMENTS.md).
+* **`/speak`:** `speed` defaults to **50**, `volume` to **70**. Android TTS maps `speed` to `setSpeechRate` and `volume` to `KEY_PARAM_VOLUME`; SDK TTS applies `speed` only (OpenSDK has no public volume setter).
+* `ros2mqtt.py` forwards a ROS `/speak` string that is a JSON object with `msg` as-is (so `speed`/`volume` reach the robot); plain text is wrapped as `{ "msg": … }`.
 
 ### 2. Robot → ROS (App publishes)
 | MQTT topic | Content | Example payload |

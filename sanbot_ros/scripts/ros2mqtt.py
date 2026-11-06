@@ -114,7 +114,17 @@ def callback_led(msg):
     rospy.loginfo(f"[MQTT] /led: {data}")
 
 def callback_speak(msg):
-    data = {"msg": msg.data}
+    # Plain text → {"msg": …}. Raw JSON with "msg" (and optional speed/volume) is forwarded as-is.
+    raw = (msg.data or "").strip()
+    if raw.startswith("{"):
+        try:
+            data = json.loads(raw)
+            if not isinstance(data, dict) or "msg" not in data:
+                data = {"msg": msg.data}
+        except ValueError:
+            data = {"msg": msg.data}
+    else:
+        data = {"msg": msg.data}
     mqtt_client.publish(TOPIC_SPEAK, json.dumps(data))
     rospy.loginfo(f"[MQTT] /speak: {data}")
 
