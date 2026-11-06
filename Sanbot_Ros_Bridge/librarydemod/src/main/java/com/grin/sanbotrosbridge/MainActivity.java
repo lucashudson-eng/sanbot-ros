@@ -24,6 +24,7 @@ import com.sanbot.opensdk.base.BindBaseInterface;
 import com.sanbot.opensdk.base.TopBaseActivity;
 import com.sanbot.opensdk.beans.FuncConstant;
 import com.sanbot.opensdk.beans.Order;
+import com.sanbot.opensdk.function.beans.EmotionsType;
 import com.sanbot.opensdk.function.beans.SpeakOption;
 import com.sanbot.opensdk.function.beans.handmotion.AbsoluteAngleHandMotion;
 import com.sanbot.opensdk.function.beans.handmotion.CombinationHandMotion;
@@ -33,6 +34,7 @@ import com.sanbot.opensdk.function.beans.wheelmotion.RelativeAngleWheelMotion;
 import com.sanbot.opensdk.function.unit.HDCameraManager;
 import com.sanbot.opensdk.function.unit.HandMotionManager;
 import com.sanbot.opensdk.function.unit.HardWareManager;
+import com.sanbot.opensdk.function.unit.ModularMotionManager;
 import com.sanbot.opensdk.function.unit.SpeechManager;
 import com.sanbot.opensdk.function.unit.SystemManager;
 import com.sanbot.opensdk.function.unit.WheelMotionManager;
@@ -146,6 +148,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
     private WheelMotionManager wheelMotionManager;
     private HeadMotionManager headMotionManager;
     private HandMotionManager handMotionManager;
+    private ModularMotionManager modularMotionManager;
     private SpeechManager speechManager;
     private HDCameraManager hdCameraManager;
 
@@ -660,6 +663,7 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         systemManager = (SystemManager) getUnitManager(FuncConstant.SYSTEM_MANAGER);
         wheelMotionManager = (WheelMotionManager) getUnitManager(FuncConstant.WHEELMOTION_MANAGER);
         headMotionManager = (HeadMotionManager) getUnitManager(FuncConstant.HEADMOTION_MANAGER);
+        modularMotionManager = (ModularMotionManager) getUnitManager(FuncConstant.MODULARMOTION_MANAGER);
         speechManager = (SpeechManager) getUnitManager(FuncConstant.SPEECH_MANAGER);
         try {
             handMotionManager = (HandMotionManager) getUnitManager(FuncConstant.HANDMOTION_MANAGER);
@@ -918,6 +922,10 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
             handleLedControl(message);
         } else if (getPrefixedTopic("camera").equals(topic)) {
             handleCameraControl(message);
+        } else if (getPrefixedTopic("emotion").equals(topic)) {
+            handleEmotionControl(message);
+        } else if (getPrefixedTopic("autonomy").equals(topic)) {
+            handleAutonomyControl(message);
         } else if (getPrefixedTopic("speak").equals(topic)) {
             try {
                 JSONObject json = new JSONObject(message);
@@ -1254,7 +1262,9 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
 
             switch (joint) {
                 case "head_pan":
-                    // Nano MainService: action=2 means horizontal axis (not ACTION_START).
+                    // Nano MainService AbsoluteAngleHeadMotion: action=1 vertical, action=2 horizontal.
+                    // Stock dsdk puts axis in direction and ACTION_START in action — MainService
+                    // ignores direction, so ACTION_START=1 made every pan a vertical move.
                     absoluteAngleHeadMotion = new AbsoluteAngleHeadMotion(
                             AbsoluteAngleHeadMotion.DIRECTION_HEAD_HORIZONTAL,
                             (byte) 2,
@@ -1513,6 +1523,137 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         return null;
     }
 
+    /**
+     * Face emotion. MQTT /emotion: {"emotion":"smile"} (case-insensitive; aliases: laugh→LAUGHTER).
+     * Visible on the robot face screen (not while this bridge UI is foreground).
+     */
+    private void handleEmotionControl(String message) {
+        try {
+            if (systemManager == null) {
+                return;
+            }
+            JSONObject json = new JSONObject(message);
+            String raw = json.optString("emotion", json.optString("name", "")).trim();
+            if (raw.isEmpty()) {
+                return;
+            }
+            EmotionsType emotion = resolveEmotion(raw);
+            if (emotion != null) {
+                systemManager.showEmotion(emotion);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private EmotionsType resolveEmotion(String raw) {
+        String key = raw.trim().toUpperCase().replace('-', '_').replace(' ', '_');
+        switch (key) {
+            case "LAUGH":
+            case "LAUGHING":
+                key = "LAUGHTER";
+                break;
+            case "HAPPY":
+                key = "SMILE";
+                break;
+            case "PRAISE":
+            case "PRISE":
+                key = "PRISE";
+                break;
+            default:
+                break;
+        }
+        try {
+            return EmotionsType.valueOf(key);
+        } catch (IllegalArgumentException e) {
+            Log.w("MQTT", "Unknown emotion: " + raw);
+            return null;
+        }
+    }
+
+    /**
+     * Autonomy helpers. MQTT /autonomy:
+     * {"mode":"charge|wander|follow","enabled":true}
+     * Follow speech mute (HumanFollow): {"mode":"follow","speech_feedback":false}
+     * Combined: {"mode":"follow","enabled":true,"speech_feedback":true}
+     */
+    private void handleAutonomyControl(String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            String mode = json.optString("mode", "").trim().toLowerCase();
+            boolean hasEnabled = json.has("enabled");
+            boolean enabled = json.optBoolean("enabled", true);
+            boolean hasSpeech = json.has("speech_feedback") || json.has("speech");
+            boolean speechFeedback = json.has("speech_feedback")
+                    ? json.optBoolean("speech_feedback", true)
+                    : json.optBoolean("speech", true);
+            switch (mode) {
+                case "charge":
+                case "auto_charge":
+                case "dock":
+                    if (hasEnabled && modularMotionManager != null) {
+                        modularMotionManager.switchCharge(enabled);
+                    }
+                    break;
+                case "wander":
+                    if (hasEnabled && modularMotionManager != null) {
+                        modularMotionManager.switchWander(enabled);
+                    }
+                    break;
+                case "follow":
+                    // HumanFollow owns chase. Do NOT call switchFollow(true): MainService
+                    // re-launches without follow=true (preview-only) and arms onboard cruise
+                    // that looks like wander. Only clear the flag on off.
+                    if (hasEnabled || hasSpeech) {
+                        notifyHumanFollow(
+                                hasEnabled ? Boolean.valueOf(enabled) : null,
+                                hasSpeech ? Boolean.valueOf(speechFeedback) : null);
+                    }
+                    if (hasEnabled && !enabled && modularMotionManager != null) {
+                        modularMotionManager.switchFollow(false);
+                    }
+                    break;
+                default:
+                    Log.w("MQTT", "Unknown autonomy mode: " + mode);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Launch / update {@code com.qihan.HumanFollow}. Pass null to leave follow or speech unchanged.
+     */
+    private void notifyHumanFollow(Boolean followEnabled, Boolean speechFeedback) {
+        runOnUiThread(() -> {
+            try {
+                Log.i("MQTT", "notify HumanFollow follow=" + followEnabled
+                        + " speech=" + speechFeedback);
+                if (followEnabled != null) {
+                    android.content.Intent followBroadcast = new android.content.Intent(
+                            "com.qihan.HumanFollow.SET_FOLLOWING");
+                    followBroadcast.setPackage("com.qihan.HumanFollow");
+                    followBroadcast.putExtra("enabled", followEnabled.booleanValue());
+                    followBroadcast.putExtra("follow", followEnabled.booleanValue());
+                    if (speechFeedback != null) {
+                        followBroadcast.putExtra("speech_feedback",
+                                speechFeedback.booleanValue());
+                    }
+                    sendBroadcast(followBroadcast);
+                } else if (speechFeedback != null) {
+                    android.content.Intent broadcast = new android.content.Intent(
+                            "com.qihan.HumanFollow.SET_SPEECH_FEEDBACK");
+                    broadcast.setPackage("com.qihan.HumanFollow");
+                    broadcast.putExtra("speech_feedback", speechFeedback.booleanValue());
+                    sendBroadcast(broadcast);
+                }
+            } catch (Exception launchEx) {
+                Log.w("MQTT", "HumanFollow notify failed", launchEx);
+            }
+        });
+    }
+
     private void handleLedControl(String message) {
         try {
             JSONObject obj = new JSONObject(message);
@@ -1600,7 +1741,8 @@ public class MainActivity extends TopBaseActivity implements MqttHandler.MqttSta
         // Commands only — do not subscribe to outbound telemetry (ir/imu/battery/…).
         // Subscribing + Show Logs caused unbounded TextView growth and ANRs.
         String[] suffixes = new String[]{
-                "light", "move", "joints", "led", "speak", "camera", "system", "proxy", "opensdk"
+                "light", "move", "joints", "led", "speak", "emotion", "autonomy",
+                "camera", "system", "proxy", "opensdk"
         };
         java.util.List<String> spinnerItems = new java.util.ArrayList<>();
         spinnerItems.add("All");

@@ -152,12 +152,17 @@ Below is a quick reference of the MQTT topics and RTMP transmission to understoo
 | `ros/move` | Discrete movements and basic navigation | `{ "direction": string, "speed": int?, "distance": int?, "duration": int? }` | `{ "direction": "forward", "speed": 7, "duration": 2 }` |
 | `ros/light` | White forehead LED (brightness) | `{ "white": 0-3 }` | `{ "white": 2 }` |
 | `ros/led` | Color LEDs (head / hands) | `{ "part": string, "mode": string, "duration": int }` | `{ "part": "all_head", "mode": "blue", "duration": 5 }` |
-| `ros/joints` | Head & wing servos | `{ "joint": string, "angle": int°, "speed": int%? }` | `{ "joint": "head_pan", "angle": 45 }` |
-| `ros/speak` | Text-to-Speech | `{ "msg": string }` | `{ "msg": "Hello, I am Sanbot" }` |
+| `ros/joints` | Head & wing servos | `{ "joint": string, "angle": int°?, "speed": int%?, "action": string? }` | `{ "joint": "wing_left", "action": "up", "speed": 50 }` |
+| `ros/emotion` | Face expression | `{ "emotion": string }` | `{ "emotion": "smile" }` |
+| `ros/autonomy` | Dock / wander / follow | `{ "mode": string, "enabled": bool }` | `{ "mode": "wander", "enabled": true }` |
+| `ros/speak` | Text-to-Speech | `{ "msg": string, "speed": 0-100?, "volume": 0-100? }` | `{ "msg": "Hello, I am Sanbot", "speed": 30, "volume": 70 }` |
 
 Notes
 * Optional fields may be omitted.
 * Angles are integers in **degrees**; speeds are percentages `0-100`.
+* Nano MainService quirks, emotion visibility, and `/autonomy` live test status (wander tested; dock/charge not physically tested; follow uses in-repo [`Sanbot_HumanFollow/`](../Sanbot_HumanFollow/)): see [docs/MQTT_CONTROL_ENHANCEMENTS.md](docs/MQTT_CONTROL_ENHANCEMENTS.md).
+* **`/speak`:** `speed` defaults to **50**, `volume` to **70**. Android TTS maps `speed` to `setSpeechRate` and `volume` to `KEY_PARAM_VOLUME`; SDK TTS applies `speed` only (OpenSDK has no public volume setter).
+* `ros2mqtt.py` forwards a ROS `/speak` string that is a JSON object with `msg` as-is (so `speed`/`volume` reach the robot); plain text is wrapped as `{ "msg": … }`.
 
 ### 2. Robot → ROS (App publishes)
 | MQTT topic | Content | Example payload |
