@@ -18,6 +18,10 @@ source devel/setup.bash
 
 This app is provided only as a reference for developing Android Studio applications that use the SDK to acquire data from—​and send commands to—​Sanbot robots.
 
+## Sanbot_HumanFollow/
+
+Optional **face-follow** Android app that restores package id **`com.qihan.HumanFollow`** on Nanos where the stock Qihan APK is missing. Build and `adb install` alongside the bridge so MQTT `/autonomy` follow can launch person tracking (OpenSDK face boxes — not Orbbec body skeleton). See [`Sanbot_HumanFollow/README.md`](Sanbot_HumanFollow/README.md).
+
 ## Sanbot_Ros_Bridge/
 
 This app serves as a bridge between the robot and a ROS 1 package, the framework most commonly used to communicate with robots or robotic platforms.

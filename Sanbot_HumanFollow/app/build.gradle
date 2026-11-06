@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace "com.qihan.HumanFollow"
+    compileSdkVersion 33
+
+    defaultConfig {
+        applicationId "com.qihan.HumanFollow"
+        minSdkVersion 21
+        targetSdkVersion 27
+        // Bump both when shipping a Nano build so the on-screen label matches the APK/PR.
+        versionCode 4
+        versionName "1.2.0"
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDir 'libs'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation files('libs/SanbotOpenSDK_2.0.1.10.aar')
+    implementation files('libs/gson-2.2.4.jar')
+    // OpenSDK TopBaseActivity extends android.support.v7 AppCompat
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    // OpenSDK is Kotlin — required at runtime on Nano
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.21'
+}
